@@ -1,0 +1,9 @@
+[network_manager_config]
+k=20
+route_table_buckets_capacity=20
+bind_address="0.0.0.0:0"
+
+[kv_database_config]
+db_path="daemon_kvdb"
+[sqlite_config]
+db_path="cocoon_db"

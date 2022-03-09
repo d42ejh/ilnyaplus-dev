@@ -1,0 +1,14 @@
+*.lock
+target/
+*.bf
+.vscode/
+*.chk
+*.d
+*.i
+temp.dec
+dec_out
+daemon_kvdb
+cocoon_db
+taskinfo
+kvdb_vp *
+how2debug.md

@@ -1,0 +1,40 @@
+[package]
+name = "cocoon-core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+#default=["dht-dev"]
+default=[] 
+dht-dev=[]
+
+[dependencies]
+tokio = { version = "1", features = ["full","tracing"] }
+openssl = { version = "0.10", features = ["vendored"] }
+#cuckoofilter = "0.5.0"
+num = "0.4.0"
+num-derive = "0.3.3"
+num-traits = "0.2.14"
+rocksdb = "0.17.0"
+tracing = "0.1.29"
+config = { version ="0.11", features = ["toml"] }
+serde = "1.0.132"
+serde_derive = "1.0.132"
+hex = "0.4.3"
+ilnyaplus-messages={path="../ilnyaplus-messages"}
+rkyv ={version= "0.7.26",features=["validation"]}
+bytecheck = "0.6.7"
+anyhow = "1.0.55"
+
+#prost = "0.9"
+#[build-dependencies]
+#prost-build = "0.9"
+
+[dependencies.rusqlite]
+version = "0.26.0"
+features = ["bundled"]
+
+[dev-dependencies]
+tracing-subscriber = "0.3.4"

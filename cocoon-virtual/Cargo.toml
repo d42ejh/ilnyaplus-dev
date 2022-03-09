@@ -1,0 +1,15 @@
+[package]
+name = "cocoon-virtual"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cocoon-core={path="../cocoon-core",features=["dht-dev"]} # use dht dev features
+anyhow = "1.0.55"
+openssl = { version = "0.10", features = ["vendored"] }
+
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full","tracing"] }

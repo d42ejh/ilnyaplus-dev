@@ -1,0 +1,18 @@
+[package]
+name = "ilnyaplus-daemon"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cocoon-core={path="../cocoon-core"}
+cirrus-core={path="../cirrus-core"}
+tokio = { version = "1", features = ["full","tracing"] }
+tracing-subscriber = "0.3.4"
+tracing = "0.1.29"
+ilnyaplus-messages={path="../ilnyaplus-messages"}
+rkyv ={version= "0.7.26",features=["validation"]}
+bytecheck = "0.6.7"
+anyhow = "1.0.55"
+futures-lite = "1.12.0"

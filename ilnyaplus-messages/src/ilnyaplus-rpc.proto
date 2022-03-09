@@ -1,0 +1,56 @@
+syntax="proto3";
+
+package ilnyaplus;
+
+service ilnyaplusRPCService{
+
+    rpc Upload(UploadRequestMessage) returns (UploadResponseMessage){}
+   
+    rpc Download(DownloadRequestMessage) returns (DownloadResponseMessage){}
+
+
+    //retrive all upload task infos
+    rpc UploadTaskInfo(UploadTaskInfoRequestMessage) returns (UploadTaskInfoResponseMessage) {}
+
+    //start upload task
+    rpc StartUploadTask(StartUploadTaskRequestMessage) returns (StartUploadTaskResponseMessage){}
+
+}
+
+/* Request Messages*/
+
+
+message UploadRequestMessage{
+    string path =1;
+}
+
+message DownloadRequestMessage{}
+
+message UploadTaskInfoRequestMessage{}
+
+message StartUploadTaskRequestMessage{
+    string task_uuid=1;
+}
+
+/* Responce Messages */
+message UploadResponseMessage{
+}
+
+message DownloadResponseMessage{
+
+}
+
+message UploadTaskInfoResponseMessage{
+ 
+    message UploadTaskInfo{
+        string uuid=1;
+        string file_path=2;
+        uint64 file_size=3;
+        bool is_encode_done=4;
+        bool is_upload_done=5;
+    }
+    repeated UploadTaskInfo task_infos=1;
+}
+
+message StartUploadTaskResponseMessage{
+}

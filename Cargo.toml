@@ -1,0 +1,9 @@
+[workspace]
+members = [
+   "ilnyaplus-messages",
+   "cocoon-core",
+   "cirrus-core",
+   "ilnyaplus-daemon",
+   "ilnyaplus-client",
+   "cocoon-virtual",
+]
