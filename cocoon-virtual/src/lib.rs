@@ -51,6 +51,14 @@ impl VirtualNetworkManager {
             virtual_peers: vpeers,
         })
     }
+    /*
+    pub async fn store(&self, peer_index: usize) -> anyhow::Result<()> {
+        self.virtual_peers[peer_index]
+            .dht_manager
+            .do_store(key, data);
+        Ok(())
+    }
+    */
 }
 
 #[cfg(test)]
