@@ -54,10 +54,9 @@ impl DHTManager {
             UdpSocket::bind(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0)).await?;
 
         //use bound addr as own ep (for cocoon virtual)
-        //TODO: had to do this but find a smarter solution
         let cls = || {
-            if cfg!(feature = "cocoon_virtual") {
-                event!(Level::WARN, "Executing codes for cocoon virutal");
+            if cfg!(feature = "dht-dev") {
+                event!(Level::WARN, "Executing codes for dht-dev");
                 return sock.local_addr().unwrap();
             } else {
                 return *ownep;
@@ -112,6 +111,11 @@ impl DHTManager {
                     MessageType::PingRequest => {
                         event!(Level::DEBUG, "Received ping request from {}", &sender);
                         //TODO: should I add the sender to route table?
+                        // for now add
+                        code from here
+                        add node to route table
+                        maybe it is good idea to implement routetable::add_node function
+                        if already in routetable then update node status
 
                         //send ping reply(pong)
                         pong(&cloned_socket, &sender).await;
