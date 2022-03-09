@@ -39,15 +39,18 @@ impl VirtualPeer {
 }
 
 pub struct VirtualNetworkManager {
-    pub virtual_peers: Vec<VirtualPeer>,
+    pub virtual_peers: Vec<Arc<VirtualPeer>>,
 }
 
 impl VirtualNetworkManager {
     pub async fn new(peers: u16) -> anyhow::Result<Self> {
         let mut vpeers = Vec::new();
         for i in 0..peers {
-            let vp = VirtualPeer::new(&format!("vp {}", i)).await?;
-            vpeers.push(vp);
+            let vp = Arc::new(VirtualPeer::new(&format!("vp {}", i)).await?);
+            vpeers.push(vp.clone());
+            tokio::spawn(async move {
+                vp.dht_manager.start_receive().await;
+            });
         }
         Ok(Self {
             virtual_peers: vpeers,
