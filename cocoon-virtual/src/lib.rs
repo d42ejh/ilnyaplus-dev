@@ -4,6 +4,8 @@ use openssl::rand::rand_bytes;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::Arc;
+use tracing::{event, Level};
+
 pub struct VirtualPeer {
     pub dht_manager: Arc<DHTManager>,
     pub name: String,
@@ -50,6 +52,21 @@ impl VirtualNetworkManager {
         Ok(Self {
             virtual_peers: vpeers,
         })
+    }
+
+    pub async fn connect_all_each_other(&self) -> anyhow::Result<()> {
+        for i in 0..self.virtual_peers.len() {
+            for j in i..self.virtual_peers.len() {
+                let vp1 = &self.virtual_peers[i];
+                let vp2 = &self.virtual_peers[j];
+                vp1.dht_manager
+                    .do_ping(&vp2.dht_manager.local_endpoint())
+                    .await;
+                event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
+            }
+        }
+
+        Ok(())
     }
     /*
     pub async fn store(&self, peer_index: usize) -> anyhow::Result<()> {

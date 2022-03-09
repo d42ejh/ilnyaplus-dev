@@ -8,6 +8,4 @@ pub use chk::{CHK, SERIALIZED_CHK_BUFFER_SIZE};
 pub use encryption::{decode_blocks_to_file, encode_file_to_blocks};
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

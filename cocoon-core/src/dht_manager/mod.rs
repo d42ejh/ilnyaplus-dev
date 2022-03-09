@@ -24,7 +24,7 @@ const DHT_DATA_COLUMN_FAMILY: &str = "dht-data-cf";
 
 /// TODO implement route table save&load (with file)
 pub struct DHTManager {
-    route_table: Arc<Mutex<RouteTable>>,
+    pub route_table: Arc<Mutex<RouteTable>>,
     udp_socket: Arc<UdpSocket>,
     kvdb: Arc<DB>,
     db: std::sync::Mutex<Connection>,

@@ -1,18 +1,25 @@
 use cocoon_virtual::VirtualNetworkManager;
-use openssl::rand::rand_bytes;
+use tracing::{event, Level};
 
 #[tokio::test]
 async fn find_value_test() -> anyhow::Result<()> {
-    //prepare a dummy data
-    let mut rkey = vec![0; 64];
-    let mut rdata = vec![0; 64];
-    rand_bytes(&mut rkey)?;
-    rand_bytes(&mut rdata)?;
+    //logger
+    tracing_subscriber::fmt()
+        .with_thread_names(true)
+        .with_max_level(Level::DEBUG)
+        .init();
 
     let vnm = VirtualNetworkManager::new(2).await?;
-    let vp = &vnm.virtual_peers[0];
-    vp.dht_manager.do_find_value(&rkey).await;
+    vnm.connect_all_each_other().await?;
 
-    //todo store data first
+    let vp0 = &vnm.virtual_peers[0];
+    let vp1 = &vnm.virtual_peers[1];
+
+    //store random data on vp1
+    let (rkey, rdata) = vp1.force_store()?;
+
+    //find value
+    vp0.dht_manager.do_find_value(&rkey).await;
+
     Ok(())
 }
