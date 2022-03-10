@@ -48,9 +48,7 @@ impl VirtualNetworkManager {
         for i in 0..peers {
             let vp = Arc::new(VirtualPeer::new(&format!("vp {}", i)).await?);
             vpeers.push(vp.clone());
-            tokio::spawn(async move {
-                vp.dht_manager.start_receive().await;
-            });
+            vp.dht_manager.start_receive().await;
         }
         Ok(Self {
             virtual_peers: vpeers,
@@ -60,13 +58,12 @@ impl VirtualNetworkManager {
     pub async fn connect_all_each_other(&self) -> anyhow::Result<()> {
         for i in 0..self.virtual_peers.len() - 1 {
             for j in i + 1..self.virtual_peers.len() {
-                event!(Level::DEBUG, "ping from {} to {}", i, j);
                 let vp1 = &self.virtual_peers[i];
                 let vp2 = &self.virtual_peers[j];
                 vp1.dht_manager
                     .do_ping(&vp2.dht_manager.local_endpoint())
                     .await;
-                //event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
+                event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
             }
         }
 

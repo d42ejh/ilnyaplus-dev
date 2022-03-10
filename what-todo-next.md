@@ -1,5 +1,5 @@
 # what to do next
-implement dht cfg(dev) features(like put value on kvdb)
+make ping test works
 and write dht op tests with it
 
 # TODO

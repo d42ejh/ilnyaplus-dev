@@ -9,6 +9,8 @@ async fn ping_test() -> anyhow::Result<()> {
         .init();
 
     let vnm = VirtualNetworkManager::new(2).await?;
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
     let vp1 = &vnm.virtual_peers[0];
     let vp2 = &vnm.virtual_peers[1];
 
@@ -32,7 +34,7 @@ async fn ping_test() -> anyhow::Result<()> {
 
     // ping
     vnm.connect_all_each_other().await?;
-    std::thread::sleep(std::time::Duration::from_secs(3));
+    std::thread::sleep(std::time::Duration::from_secs(5));
 
     assert_eq!(
         vp1.dht_manager

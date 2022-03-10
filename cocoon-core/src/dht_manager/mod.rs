@@ -81,6 +81,7 @@ impl DHTManager {
         tokio::spawn(async move {
             let mut buffer = vec![0; 50000]; //todo define max size
             loop {
+                event!(Level::DEBUG, "Waiting for incoming message...");
                 let (received_size, sender) = cloned_socket
                     .recv_from(&mut buffer)
                     .await
@@ -373,7 +374,8 @@ impl DHTManager {
                         for n in &msg.nodes {
                             {
                                 let mut route_table = cloned_route_table.lock().await;
-                                route_table.add_node(n);
+                                let is_handled = route_table.add_node(n).unwrap();
+                                //todo handle branch if route table(bucket) is full
                             }
                         }
                     }
