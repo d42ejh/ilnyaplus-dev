@@ -1,5 +1,5 @@
 use cirrus_core::ecrs::*;
-use std::{any, path::PathBuf};
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
