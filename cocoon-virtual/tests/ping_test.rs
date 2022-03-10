@@ -31,10 +31,7 @@ async fn ping_test() -> anyhow::Result<()> {
     );
 
     // ping
-    vp1.dht_manager
-        .do_ping(&vp2.dht_manager.local_endpoint())
-        .await;
-
+    vnm.connect_all_each_other().await?;
     std::thread::sleep(std::time::Duration::from_secs(3));
 
     assert_eq!(
