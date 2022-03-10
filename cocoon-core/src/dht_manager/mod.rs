@@ -112,11 +112,35 @@ impl DHTManager {
                         event!(Level::DEBUG, "Received ping request from {}", &sender);
                         //TODO: should I add the sender to route table?
                         // for now add
-                        code from here
-                        add node to route table
-                        maybe it is good idea to implement routetable::add_node function
-                        if already in routetable then update node status
 
+                        {
+                            let mut rt = cloned_route_table.lock().await;
+                            let is_handled = rt.add_node(&sender).unwrap();
+                            if !is_handled {
+                                event!(Level::DEBUG, "Space not available for the new node");
+                                let bucket = rt.find_bucket(&endpoint_to_node_id(&sender));
+                                for node in &bucket.nodes {
+                                    let ep;
+                                    {
+                                        let node = node.lock().unwrap();
+                                        ep = node.endpoint;
+                                    }
+                                    {
+                                        let mut ping_list = cloned_ping_list.lock().unwrap();
+                                        //insert to ping list
+                                        ping_list.insert(ep);
+                                    }
+                                    do_ping_impl(&cloned_socket, &ep).await;
+                                }
+
+                                //todo
+                                event!(
+                                    Level::WARN,
+                                    "TODO: remove dead nodes from the route table and add new node"
+                                );
+                                return;
+                            }
+                        }
                         //send ping reply(pong)
                         pong(&cloned_socket, &sender).await;
                     }
@@ -301,19 +325,9 @@ impl DHTManager {
 
                             let mut rt = cloned_route_table.lock().await;
 
-                            if rt.contains(&sender) {
-                                //already in route table
-                                let node = rt.get_node_by_endpoint(&sender);
-                                {
-                                    //update node status
-                                    let mut node = node.lock().unwrap();
-                                    node.update_alive();
-                                }
-                                event!(Level::DEBUG, "Updated the status of {}", sender);
-                                return;
-                            }
+                            let is_handled = rt.add_node(&sender).unwrap();
 
-                            if !rt.is_space_available_for(&sender) {
+                            if !is_handled {
                                 event!(Level::DEBUG, "Space not available for the new node");
                                 let bucket = rt.find_bucket(&endpoint_to_node_id(&sender));
                                 for node in &bucket.nodes {
@@ -329,14 +343,14 @@ impl DHTManager {
                                     }
                                     do_ping_impl(&cloned_socket, &ep).await;
                                 }
+
+                                //todo
                                 event!(
                                     Level::WARN,
                                     "TODO: remove dead nodes from the route table and add new node"
                                 );
                                 return;
                             }
-                            //new node!
-                            rt.add_node(&sender);
                         }
                         event!(Level::DEBUG, "add node");
                     }

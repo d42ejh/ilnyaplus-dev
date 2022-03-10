@@ -3,6 +3,7 @@ mod node;
 use bucket::Bucket;
 pub use node::{calculate_bucket_index, endpoint_to_node_id, node_id_cmp, node_id_distance, Node};
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Mutex;
 use std::{net::SocketAddr, sync::Arc};
 use tracing::{event, span, Level};
@@ -50,18 +51,25 @@ impl RouteTable {
         opt.unwrap().clone()
     }
 
-    pub fn add_node(&mut self, node_endpoint: &SocketAddr) {
+    //
+    pub fn add_node(&mut self, node_endpoint: &SocketAddr) -> anyhow::Result<bool> {
         event!(Level::DEBUG, "add node");
         let new_node = Node::new(node_endpoint);
-        if self.own_node == new_node {
-            event!(Level::ERROR, "Tried to add an own node to the route table");
-            return;
-        }
+
+        assert!(self.own_node != new_node);
 
         if self.contains(node_endpoint) {
             //already in route table
+            //update status
             event!(Level::ERROR, "{} is already in route table", node_endpoint);
-            return;
+            let node = self.get_node_by_endpoint(node_endpoint);
+            {
+                //update node status
+                let mut node = node.lock().unwrap();
+                node.update_alive();
+            }
+            event!(Level::DEBUG, "Updated the status of {}", node_endpoint);
+            return Ok(true);
         }
 
         //find bucket for node
@@ -70,13 +78,14 @@ impl RouteTable {
         let new_node = Arc::new(Mutex::new(new_node));
 
         if bucket.is_full() {
-            return;
+            return Ok(false);
         }
 
         //add to bucket
         bucket.add_node(&new_node);
         //add to node map
         self.node_map.insert(*node_endpoint, new_node);
+        Ok(true)
     }
 
     #[must_use]
