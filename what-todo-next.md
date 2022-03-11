@@ -2,6 +2,8 @@
 make ping test works
 and write dht op tests with it
 
+# BUGS TODO
+- [] when testing with cocoon virtual sometimes find value message.key.len() ==0 somehow
 # TODO
 - [] resumeable task for encoding, downloading
 - [] use tower library

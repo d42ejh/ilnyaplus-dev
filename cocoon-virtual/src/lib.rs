@@ -28,13 +28,15 @@ impl VirtualPeer {
 
     /// Use dht-dev feature and store random data at random key.
     /// Returns stored (key,data)
-    pub fn force_store(&self) -> anyhow::Result<(Vec<u8>, Vec<u8>)> {
-        let mut rkey = vec![0; 64];
-        let mut rdata = vec![0; 64];
-        rand_bytes(&mut rkey).unwrap();
-        rand_bytes(&mut rdata).unwrap();
-        self.dht_manager.dev_store(&rkey, &rdata)?;
-        Ok((rkey, rdata))
+    pub fn force_store(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
+        event!(
+            Level::INFO,
+            "[{}] Force store: key = {}",
+            self.name,
+            hex::encode(key)
+        );
+        self.dht_manager.dev_store(&key, &data)?;
+        Ok(())
     }
 }
 

@@ -122,7 +122,10 @@ pub struct FindValueRequestMessage {
 
 impl FindValueRequestMessage {
     pub fn new(key: &[u8]) -> Self {
-        FindValueRequestMessage { key: key.to_vec() }
+        debug_assert!(key.len() != 0);
+        FindValueRequestMessage {
+            key: key.to_owned(),
+        }
     }
 
     pub fn from_bytes(bytes: &[u8]) -> (MessageHeader, Self) {
@@ -284,5 +287,54 @@ impl FindValueResponceMessage {
             .expect("Failed to serialize a message");
         bytes.extend_from_slice(&serializer.into_serializer().into_inner());
         bytes
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use openssl::envelope::Open;
+
+    use super::{MessageHeader, MessageType, PingRequestMessage};
+    use crate::message::FindValueRequestMessage;
+    use openssl::rand::rand_bytes;
+
+    #[test]
+    pub fn header() -> anyhow::Result<()> {
+        let h = MessageHeader::new(MessageType::PingRequest);
+        assert_eq!(h.message_type, MessageType::PingRequest as u32);
+
+        //serialize
+        let bytes = h.to_bytes();
+
+        //deserialize
+        let hh = MessageHeader::from_bytes(&bytes);
+
+        assert_eq!(h, hh);
+        Ok(())
+    }
+
+    #[test]
+    pub fn ping_request() -> anyhow::Result<()> {
+        let req = PingRequestMessage::new();
+
+        let bytes = req.to_bytes();
+        let (_, r) = PingRequestMessage::from_bytes(&bytes);
+        assert_eq!(r, req);
+        Ok(())
+    }
+
+    #[test]
+    pub fn find_value_request() -> anyhow::Result<()> {
+        let mut key = vec![0; 64];
+        rand_bytes(&mut key)?;
+
+        let req = FindValueRequestMessage::new(&key);
+        assert_eq!(key, req.key);
+
+        let bytes = req.to_bytes();
+        let (_, r) = FindValueRequestMessage::from_bytes(&bytes);
+        assert_eq!(r, req);
+        assert_eq!(r.key, key);
+        Ok(())
     }
 }

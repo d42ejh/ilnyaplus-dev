@@ -242,10 +242,14 @@ impl DHTManager {
                         assert_eq!(wrriten_size, buffer.len());
                     }
                     MessageType::FindValueRequest => {
+                        // event!(Level::DEBUG, "Received find value request");
+
                         let archived =
                             rkyv::check_archived_root::<FindValueRequestMessage>(&buffer).unwrap();
                         let msg: FindValueRequestMessage =
                             archived.deserialize(&mut Infallible).unwrap();
+
+                        debug_assert!(msg.key.len() != 0);
 
                         //check kvdb
                         let get_opt;
@@ -271,11 +275,14 @@ impl DHTManager {
                         assert!(get_opt.is_none());
                         //value with the key not found in local,
                         //reply with a closest node to the key
+                        event!(Level::DEBUG, "XXXXXXXXXXXX");
+
                         let nodes;
                         {
                             let route_table = cloned_route_table.lock().await;
                             nodes = route_table.find_nodes(&msg.key, 1);
                         }
+                        event!(Level::DEBUG, "ZZZZZZZZ");
                         //only ask to a closest peer
                         //plain implementation
                         //TODO: customize this
@@ -490,6 +497,7 @@ impl DHTManager {
         }
         for node in &nodes_to_foward {
             let node = node.lock().unwrap();
+            debug_assert!(request_msg.key.len() != 0);
             self.udp_socket
                 .send_to(&request_msg.to_bytes(), &node.endpoint)
                 .await

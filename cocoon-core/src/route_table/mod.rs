@@ -91,8 +91,11 @@ impl RouteTable {
     #[must_use]
     pub fn find_bucket(&self, id: &[u8]) -> &Bucket {
         event!(Level::DEBUG, "Find bucket");
+
         let index = calculate_bucket_index(&self.own_node.id, &id);
+
         event!(Level::DEBUG, "bucket index {}", index);
+
         if self.buckets.len() <= index {
             panic!("Logic error, need bigger bucket vector\ncalculated bucket index {}\ncurrent bucket vector capacity {}", index,self.buckets.len());
         }
@@ -116,6 +119,7 @@ impl RouteTable {
 
     #[must_use]
     pub fn find_nodes(&self, id: &[u8], desired_count: usize) -> Vec<Arc<Mutex<Node>>> {
+        debug_assert!(id.len() != 0);
         let bucket = self.find_bucket(&id);
         bucket.select_nodes(desired_count)
         //todo if nodes.len() < desired_count
