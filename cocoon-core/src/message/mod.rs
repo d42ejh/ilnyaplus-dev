@@ -31,9 +31,7 @@ impl MessageHeader {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        if bytes.len() < constant::MESSAGE_HEADER_SIZE {
-            panic!("logic error");
-        }
+        assert!(bytes.len() >= constant::MESSAGE_HEADER_SIZE);
         let archived =
             rkyv::check_archived_root::<Self>(&bytes[0..constant::MESSAGE_HEADER_SIZE]).unwrap();
         let header: Self = archived.deserialize(&mut Infallible).unwrap();
@@ -46,9 +44,8 @@ impl MessageHeader {
             .serialize_value(self)
             .expect("Failed to serialize a message");
         let av = serializer.into_serializer().into_inner();
-        if av.len() != constant::MESSAGE_HEADER_SIZE {
-            panic!("logic error");
-        }
+        assert_eq!(av.len(), constant::MESSAGE_HEADER_SIZE);
+
         av.to_vec()
     }
 }
@@ -130,7 +127,8 @@ impl FindValueRequestMessage {
 
     pub fn from_bytes(bytes: &[u8]) -> (MessageHeader, Self) {
         let header = MessageHeader::from_bytes(bytes);
-        let archived = rkyv::check_archived_root::<Self>(bytes).unwrap();
+        let archived =
+            rkyv::check_archived_root::<Self>(&bytes[constant::MESSAGE_HEADER_SIZE..]).unwrap();
         let msg: Self = archived.deserialize(&mut Infallible).unwrap();
         (header, msg)
     }
@@ -318,7 +316,8 @@ mod tests {
         let req = PingRequestMessage::new();
 
         let bytes = req.to_bytes();
-        let (_, r) = PingRequestMessage::from_bytes(&bytes);
+        let (header, r) = PingRequestMessage::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::PingRequest as u32);
         assert_eq!(r, req);
         Ok(())
     }
@@ -332,9 +331,19 @@ mod tests {
         assert_eq!(key, req.key);
 
         let bytes = req.to_bytes();
-        let (_, r) = FindValueRequestMessage::from_bytes(&bytes);
+        let (header, r) = FindValueRequestMessage::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
         assert_eq!(r, req);
         assert_eq!(r.key, key);
+
+        //dht manager simulation
+        let header = MessageHeader::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
+        let (header, r) = FindValueRequestMessage::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
+        assert_eq!(r.key, key);
+        println!("{}", hex::encode(r.key));
+        println!("{}", hex::encode(key));
         Ok(())
     }
 }

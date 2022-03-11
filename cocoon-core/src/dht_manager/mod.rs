@@ -146,14 +146,7 @@ impl DHTManager {
                         pong(&cloned_socket, &sender).await;
                     }
                     MessageType::StoreValueRequest => {
-                        event!(Level::DEBUG, "AAAAAAAA");
-                        let archived =
-                            rkyv::check_archived_root::<StoreValueRequestMessage>(&buffer).unwrap();
-
-                        event!(Level::DEBUG, "BBBBBBBB");
-                        let msg: StoreValueRequestMessage =
-                            archived.deserialize(&mut Infallible).unwrap();
-                        event!(Level::DEBUG, "CCCCCCCC");
+                        let (_, msg) = StoreValueRequestMessage::from_bytes(&buffer);
                         if msg.data.len() == 0 {
                             //TODO: reject?
                             return;
@@ -210,11 +203,7 @@ impl DHTManager {
                     }
                     MessageType::FindNodeRequest => {
                         //TODO when to forward the messsage?
-                        let archived =
-                            rkyv::check_archived_root::<FindNodeRequestMessage>(&buffer).unwrap();
-                        let msg: FindNodeRequestMessage =
-                            archived.deserialize(&mut Infallible).unwrap();
-                        //    !Memo: replace all manual deserializes with Message::from_bytes
+                        let (_, msg) = FindNodeRequestMessage::from_bytes(&buffer);
                         //   reject malformed messages
 
                         let nodes;
@@ -244,12 +233,9 @@ impl DHTManager {
                     MessageType::FindValueRequest => {
                         // event!(Level::DEBUG, "Received find value request");
 
-                        let archived =
-                            rkyv::check_archived_root::<FindValueRequestMessage>(&buffer).unwrap();
-                        let msg: FindValueRequestMessage =
-                            archived.deserialize(&mut Infallible).unwrap();
-
-                        debug_assert!(msg.key.len() != 0);
+                        let (header, msg) = FindValueRequestMessage::from_bytes(&buffer);
+                        debug_assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
+                        debug_assert_ne!(msg.key.len(), 0);
 
                         //check kvdb
                         let get_opt;
@@ -497,7 +483,7 @@ impl DHTManager {
         }
         for node in &nodes_to_foward {
             let node = node.lock().unwrap();
-            debug_assert!(request_msg.key.len() != 0);
+            debug_assert_ne!(request_msg.key.len(), 0);
             self.udp_socket
                 .send_to(&request_msg.to_bytes(), &node.endpoint)
                 .await

@@ -4,6 +4,7 @@ and write dht op tests with it
 
 # BUGS TODO
 - [] when testing with cocoon virtual sometimes find value message.key.len() ==0 somehow
+- fix all messages from bytes function
 # TODO
 - [] resumeable task for encoding, downloading
 - [] use tower library
