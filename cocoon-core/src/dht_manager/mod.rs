@@ -79,19 +79,17 @@ impl DHTManager {
         let cloned_kvdb = self.kvdb.clone();
         let cloned_ping_list = self.ping_list.clone();
         tokio::spawn(async move {
-            let mut buffer = vec![0; 50000]; //todo define max size
             loop {
+                let mut buffer = vec![0; 50000]; //todo define max size
                 event!(Level::DEBUG, "Waiting for incoming message...");
                 let (received_size, sender) = cloned_socket
                     .recv_from(&mut buffer)
                     .await
                     .expect("Failed to receive"); //TODO: maybe separate receive cycle and handle cycle
-                event!(
-                    Level::DEBUG,
-                    "received {} bytes from {}",
-                    received_size,
-                    sender
-                );
+
+                //resize buffer(truncate)
+                debug_assert!(received_size <= buffer.len());
+                buffer.resize(received_size, 0xff);
 
                 //deserialize message header
                 if buffer.len() < MESSAGE_HEADER_SIZE {
@@ -232,7 +230,12 @@ impl DHTManager {
                     }
                     MessageType::FindValueRequest => {
                         // event!(Level::DEBUG, "Received find value request");
-
+                        event!(
+                            Level::DEBUG,
+                            "received packet bytes({}): {}",
+                            buffer.len(),
+                            hex::encode(&buffer),
+                        );
                         let (header, msg) = FindValueRequestMessage::from_bytes(&buffer);
                         debug_assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
                         debug_assert_ne!(msg.key.len(), 0);
@@ -484,10 +487,17 @@ impl DHTManager {
         for node in &nodes_to_foward {
             let node = node.lock().unwrap();
             debug_assert_ne!(request_msg.key.len(), 0);
-            self.udp_socket
+            let sent_size = self
+                .udp_socket
                 .send_to(&request_msg.to_bytes(), &node.endpoint)
                 .await
-                .expect("Failed to send store request");
+                .unwrap();
+            event!(Level::DEBUG, "do find value sent {} bytes", sent_size);
+            event!(
+                Level::DEBUG,
+                "sent packet bytes: {}",
+                hex::encode(&request_msg.to_bytes())
+            );
         }
     }
 
@@ -507,7 +517,8 @@ impl DHTManager {
 
         for peer in &peers {
             let peer = peer.lock().unwrap();
-            self.udp_socket
+            let _ = self
+                .udp_socket
                 .send_to(&request_msg.to_bytes(), &peer.endpoint)
                 .await
                 .expect("Failed to send find node request");

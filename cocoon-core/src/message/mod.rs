@@ -5,6 +5,7 @@ use rkyv::{
     Archive, Deserialize, Infallible, Serialize,
 };
 use std::net::SocketAddr;
+use tracing::{event, Level};
 
 #[derive(Debug, PartialEq, Eq, FromPrimitive)]
 pub enum MessageType {
@@ -136,11 +137,16 @@ impl FindValueRequestMessage {
     pub fn to_bytes(&self) -> Vec<u8> {
         let header = MessageHeader::new(MessageType::FindValueRequest);
         let mut bytes = header.to_bytes();
+        event!(Level::DEBUG, "find val header {} bytes", bytes.len());
         let mut serializer = AllocSerializer::<512>::default(); //todo bench
         serializer
             .serialize_value(self)
             .expect("Failed to serialize a message");
-        bytes.extend_from_slice(&serializer.into_serializer().into_inner());
+        let body_bytes = serializer.into_serializer().into_inner();
+       
+        event!(Level::DEBUG, "find val body {} bytes", body_bytes.len());
+       
+        bytes.extend_from_slice(&body_bytes);
         bytes
     }
 }
@@ -292,7 +298,8 @@ impl FindValueResponceMessage {
 mod tests {
     use openssl::envelope::Open;
 
-    use super::{MessageHeader, MessageType, PingRequestMessage};
+    use super::constant::MESSAGE_HEADER_SIZE;
+    use super::{FindNodeRequestMessage, MessageHeader, MessageType, PingRequestMessage};
     use crate::message::FindValueRequestMessage;
     use openssl::rand::rand_bytes;
 
@@ -303,6 +310,7 @@ mod tests {
 
         //serialize
         let bytes = h.to_bytes();
+        assert_eq!(bytes.len(), MESSAGE_HEADER_SIZE);
 
         //deserialize
         let hh = MessageHeader::from_bytes(&bytes);
@@ -319,6 +327,31 @@ mod tests {
         let (header, r) = PingRequestMessage::from_bytes(&bytes);
         assert_eq!(header.message_type, MessageType::PingRequest as u32);
         assert_eq!(r, req);
+        Ok(())
+    }
+
+    #[test]
+    pub fn find_node_request() -> anyhow::Result<()> {
+        let mut key = vec![0; 64];
+        rand_bytes(&mut key)?;
+        let req = FindNodeRequestMessage::new(&key);
+
+        assert_eq!(key, req.key);
+
+        let bytes = req.to_bytes();
+        let (header, r) = FindNodeRequestMessage::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindNodeRequest as u32);
+        assert_eq!(r, req);
+        assert_eq!(r.key, key);
+
+        //dht manager simulation
+        let header = MessageHeader::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindNodeRequest as u32);
+        let (header, r) = FindNodeRequestMessage::from_bytes(&bytes);
+        assert_eq!(header.message_type, MessageType::FindNodeRequest as u32);
+        assert_eq!(r.key, key);
+        println!("{}", hex::encode(r.key));
+        println!("{}", hex::encode(key));
         Ok(())
     }
 
