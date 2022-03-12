@@ -229,13 +229,8 @@ impl DHTManager {
                         assert_eq!(wrriten_size, buffer.len());
                     }
                     MessageType::FindValueRequest => {
-                        // event!(Level::DEBUG, "Received find value request");
-                        event!(
-                            Level::DEBUG,
-                            "received packet bytes({}): {}",
-                            buffer.len(),
-                            hex::encode(&buffer),
-                        );
+                        event!(Level::DEBUG, "Received find value request");
+
                         let (header, msg) = FindValueRequestMessage::from_bytes(&buffer);
                         debug_assert_eq!(header.message_type, MessageType::FindValueRequest as u32);
                         debug_assert_ne!(msg.key.len(), 0);
@@ -492,12 +487,6 @@ impl DHTManager {
                 .send_to(&request_msg.to_bytes(), &node.endpoint)
                 .await
                 .unwrap();
-            event!(Level::DEBUG, "do find value sent {} bytes", sent_size);
-            event!(
-                Level::DEBUG,
-                "sent packet bytes: {}",
-                hex::encode(&request_msg.to_bytes())
-            );
         }
     }
 
