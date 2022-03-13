@@ -34,7 +34,8 @@ async fn main() -> anyhow::Result<()> {
 
         match input.as_str() {
             "ping" => {
-                println!("");
+                println!("ping");
+                println!("TODO");
             }
             "store" => {
                 println!("Store");
@@ -52,13 +53,20 @@ async fn main() -> anyhow::Result<()> {
                     vp.force_store(&r_key, &r_data)?;
                 }
             }
-            "find" => {
+            "findv" => {
                 println!(
                     "Try to find a value with the recent stored key: {}",
                     hex::encode(&r_key)
                 );
                 let vp = &vnm.virtual_peers[0];
                 vp.dht_manager.do_find_value(&r_key).await;
+            }
+            "findn" => {
+                println!("Find node");
+                let vp = &vnm.virtual_peers[0];
+                let mut r_id = vec![0; 64];
+                rand_bytes(&mut r_id)?;
+                vp.dht_manager.do_find_node(&r_id).await;
             }
             "connectall" => {
                 println!("Connect all nodes each other");
