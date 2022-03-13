@@ -88,8 +88,12 @@ mod tests {
     async fn force_store_test() -> anyhow::Result<()> {
         let vnm = VirtualNetworkManager::new(1).await?;
         let peer = &vnm.virtual_peers[0];
-        let (k, v) = peer.force_store()?;
-        assert!(peer.dht_manager.is_available_on_local(&k)?);
+        let mut rk = vec![0; 64];
+        let mut rd = vec![0; 64];
+        rand_bytes(&mut rk)?;
+        rand_bytes(&mut rd)?;
+        peer.force_store(&rk, &rd)?;
+        assert!(peer.dht_manager.is_available_on_local(&rk)?);
         Ok(())
     }
 }

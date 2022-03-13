@@ -1,7 +1,9 @@
 # what to do next
 make ping test works
 and write dht op tests with it
-
+refactor
+polish up dht
+daemon
 # TODO
 - [] resumeable task for encoding, downloading
 - [] use tower library
