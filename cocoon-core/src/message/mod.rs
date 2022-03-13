@@ -164,11 +164,11 @@ pub struct StoreValueRequestMessage {
 }
 
 impl StoreValueRequestMessage {
-    pub fn new(key: &[u8], data: &[u8], replacation_level: u32) -> Self {
+    pub fn new(key: &[u8], data: &[u8], replication_level: u32) -> Self {
         StoreValueRequestMessage {
             key: key.to_vec(),
             data: data.to_vec(),
-            replication_level: replacation_level,
+            replication_level: replication_level,
         }
     }
 
@@ -303,11 +303,9 @@ impl FindValueResponceMessage {
 
 #[cfg(test)]
 mod tests {
-    use openssl::envelope::Open;
-
     use super::constant::MESSAGE_HEADER_SIZE;
     use super::{FindNodeRequestMessage, MessageHeader, MessageType, PingRequestMessage};
-    use crate::message::FindValueRequestMessage;
+    use crate::message::{FindValueRequestMessage, PingResponceMessage, StoreValueRequestMessage};
     use openssl::rand::rand_bytes;
 
     #[test]
@@ -355,7 +353,6 @@ mod tests {
         let (h, r) = FindNodeRequestMessage::from_bytes(&bytes);
         assert_eq!(h, header);
         assert_eq!(r, req);
-        assert_eq!(r.key, key);
 
         Ok(())
     }
@@ -375,8 +372,46 @@ mod tests {
         let (h, r) = FindValueRequestMessage::from_bytes(&bytes);
         assert_eq!(h, header);
         assert_eq!(r, req);
-        assert_eq!(r.key, key);
 
         Ok(())
     }
+
+    #[test]
+    pub fn store_value_request() -> anyhow::Result<()> {
+        //header
+        let header = MessageHeader::new(MessageType::StoreValueRequest);
+
+        let mut key = vec![0; 64];
+        let mut data = vec![0; 64];
+        rand_bytes(&mut key)?;
+        rand_bytes(&mut data)?;
+        let rep_level = 99;
+        let req = StoreValueRequestMessage::new(&key, &data, rep_level);
+        assert_eq!(key, req.key);
+        assert_eq!(data, req.data);
+        assert_eq!(rep_level, req.replication_level);
+
+        let bytes = req.to_bytes();
+        let (h, r) = StoreValueRequestMessage::from_bytes(&bytes);
+        assert_eq!(h, header);
+        assert_eq!(r, req);
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn ping_responce() -> anyhow::Result<()> {
+        //header
+        let header = MessageHeader::new(MessageType::PingResponce);
+
+        let req = PingResponceMessage::new();
+
+        let bytes = req.to_bytes();
+        let (h, r) = PingResponceMessage::from_bytes(&bytes);
+        assert_eq!(h, header);
+        assert_eq!(r, req);
+        Ok(())
+    }
+
+    //todo other response message
 }
