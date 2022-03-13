@@ -175,7 +175,7 @@ async fn main() -> anyhow::Result<()> {
     let dht_manager = Arc::new(dht_manager);
     let cloned_dht_manager = dht_manager.clone();
 
-    //todo im not where to start these atm, todo move
+    //todo im not sure where to start these atm, todo move
     //download manager
     let cd = std::env::current_dir().unwrap(); //temp
     let dl_manager = DownloadManager::new(&cd).await; //todo read from config
