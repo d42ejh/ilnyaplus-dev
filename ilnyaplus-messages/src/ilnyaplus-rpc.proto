@@ -32,7 +32,7 @@ message StartUploadTaskRequestMessage{
     string task_uuid=1;
 }
 
-/* Responce Messages */
+/* Response Messages */
 message UploadResponseMessage{
 }
 

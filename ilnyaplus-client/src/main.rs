@@ -54,13 +54,13 @@ async fn main() -> anyhow::Result<()> {
             let request = Request::new(UploadRequestMessage {
                 path: target_file_path.to_str().unwrap().to_owned(),
             });
-            let responce = client.upload(request).await?;
-            //todo implement responce
+            let response = client.upload(request).await?;
+            //todo implement response
         }
         Commands::UploadTaskInfo {} => {
             let request = Request::new(UploadTaskInfoRequestMessage {});
-            let responce = client.upload_task_info(request).await?;
-            let task_infos = &responce.get_ref().task_infos;
+            let response = client.upload_task_info(request).await?;
+            let task_infos = &response.get_ref().task_infos;
 
             println!("Daemon has {} upload tasks.", task_infos.len());
             println!();
@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
             let request = Request::new(StartUploadTaskRequestMessage {
                 task_uuid: task_uuid.to_owned(),
             });
-            let responce = client.start_upload_task(request).await?;
+            let response = client.start_upload_task(request).await?;
             println!("Started upload task, id:{}", task_uuid);
         }
     }

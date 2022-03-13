@@ -221,11 +221,11 @@ impl DHTManager {
                             let node = node.lock().unwrap();
                             addrs.push(node.endpoint);
                         }
-                        let msg = FindNodeResponceMessage::new(&addrs);
+                        let msg = FindNodeResponseMessage::new(&addrs);
                         let wrriten_size = cloned_socket
                             .send_to(&msg.to_bytes(), &sender)
                             .await
-                            .expect("Failed to send find node responce");
+                            .expect("Failed to send find node response");
                         assert_eq!(wrriten_size, buffer.len());
                     }
                     MessageType::FindValueRequest => {
@@ -247,11 +247,11 @@ impl DHTManager {
                             //value with the key found in (local) kvdb
                             let value = get_opt.unwrap();
                             let reply_msg =
-                                FindValueResponceMessage::new(&msg.key, None, Some(&value));
+                                FindValueResponseMessage::new(&msg.key, None, Some(&value));
                             let wrriten_size = cloned_socket
                                 .send_to(&reply_msg.to_bytes(), sender)
                                 .await
-                                .expect("Failed to send a find value responce (with value)");
+                                .expect("Failed to send a find value response (with value)");
                             assert_eq!(wrriten_size, reply_msg.to_bytes().len());
                             return;
                         }
@@ -278,20 +278,20 @@ impl DHTManager {
                         }
                         assert!(nodes.len() == 1);
                         let node = &nodes[0];
-                        let responce_msg;
+                        let response_msg;
                         {
                             let node = node.lock().unwrap();
-                            responce_msg =
-                                FindValueResponceMessage::new(&msg.key, Some(&node.endpoint), None);
+                            response_msg =
+                                FindValueResponseMessage::new(&msg.key, Some(&node.endpoint), None);
                         }
                         let wrriten_size = cloned_socket
-                            .send_to(&responce_msg.to_bytes(), sender)
+                            .send_to(&response_msg.to_bytes(), sender)
                             .await
-                            .expect("Failed to send a find value responce (with node)");
-                        assert_eq!(wrriten_size, responce_msg.to_bytes().len());
+                            .expect("Failed to send a find value response (with node)");
+                        assert_eq!(wrriten_size, response_msg.to_bytes().len());
                     }
-                    MessageType::PingResponce => {
-                        event!(Level::DEBUG, "Received a ping responce from {}", &sender);
+                    MessageType::PingResponse => {
+                        event!(Level::DEBUG, "Received a ping response from {}", &sender);
 
                         {
                             {
@@ -346,18 +346,18 @@ impl DHTManager {
                         }
                         event!(Level::DEBUG, "add node");
                     }
-                    MessageType::FindNodeResponce => {
+                    MessageType::FindNodeResponse => {
                         //TODO: did I sent request?
                         //deserialize message
                         let archived =
-                            rkyv::check_archived_root::<FindNodeResponceMessage>(&buffer).unwrap();
+                            rkyv::check_archived_root::<FindNodeResponseMessage>(&buffer).unwrap();
 
-                        let msg: FindNodeResponceMessage =
+                        let msg: FindNodeResponseMessage =
                             archived.deserialize(&mut Infallible).unwrap();
 
                         event!(
                             Level::DEBUG,
-                            "Received find node responce from {}\n(Contains {} nodes)",
+                            "Received find node response from {}\n(Contains {} nodes)",
                             &sender,
                             msg.nodes.len()
                         );
@@ -370,17 +370,17 @@ impl DHTManager {
                             }
                         }
                     }
-                    MessageType::FindValueResponce => {
+                    MessageType::FindValueResponse => {
                         //TODO check if I actually requested the data
                         event!(
                             Level::DEBUG,
-                            "Received find value responce from {}",
+                            "Received find value response from {}",
                             &sender
                         );
                         let archived =
-                            rkyv::check_archived_root::<FindValueResponceMessage>(&buffer).unwrap();
+                            rkyv::check_archived_root::<FindValueResponseMessage>(&buffer).unwrap();
 
-                        let msg: FindValueResponceMessage =
+                        let msg: FindValueResponseMessage =
                             archived.deserialize(&mut Infallible).unwrap();
                         //todo save data?
                     }
@@ -544,7 +544,7 @@ async fn do_ping_impl(udp_socket: &Arc<UdpSocket>, endpoint: &SocketAddr) {
 
 //send ping reply
 async fn pong(udp_socket: &UdpSocket, endpoint: &SocketAddr) {
-    let msg = PingResponceMessage::new();
+    let msg = PingResponseMessage::new();
     udp_socket
         .send_to(&msg.to_bytes(), endpoint)
         .await

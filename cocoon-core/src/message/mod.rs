@@ -13,9 +13,9 @@ pub enum MessageType {
     FindNodeRequest = 2,
     FindValueRequest = 3,
     StoreValueRequest = 4,
-    PingResponce = 5,
-    FindNodeResponce = 6,
-    FindValueResponce = 7,
+    PingResponse = 5,
+    FindNodeResponse = 6,
+    FindValueResponse = 7,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
@@ -194,11 +194,11 @@ impl StoreValueRequestMessage {
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
-pub struct PingResponceMessage {}
+pub struct PingResponseMessage {}
 
-impl PingResponceMessage {
+impl PingResponseMessage {
     pub fn new() -> Self {
-        PingResponceMessage {}
+        PingResponseMessage {}
     }
 
     pub fn from_bytes(bytes: &[u8]) -> (MessageHeader, Self) {
@@ -210,7 +210,7 @@ impl PingResponceMessage {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let header = MessageHeader::new(MessageType::PingResponce);
+        let header = MessageHeader::new(MessageType::PingResponse);
         let mut bytes = header.to_bytes();
         let mut serializer = AllocSerializer::<512>::default(); //todo bench
         serializer
@@ -223,13 +223,13 @@ impl PingResponceMessage {
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
-pub struct FindNodeResponceMessage {
+pub struct FindNodeResponseMessage {
     pub nodes: Vec<SocketAddr>,
 }
 
-impl FindNodeResponceMessage {
+impl FindNodeResponseMessage {
     pub fn new(addrs: &[SocketAddr]) -> Self {
-        FindNodeResponceMessage {
+        FindNodeResponseMessage {
             nodes: addrs.to_vec(),
         }
     }
@@ -243,7 +243,7 @@ impl FindNodeResponceMessage {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let header = MessageHeader::new(MessageType::FindNodeResponce);
+        let header = MessageHeader::new(MessageType::FindNodeResponse);
         let mut bytes = header.to_bytes();
         let mut serializer = AllocSerializer::<512>::default(); //todo bench
         serializer
@@ -256,24 +256,24 @@ impl FindNodeResponceMessage {
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
-pub struct FindValueResponceMessage {
+pub struct FindValueResponseMessage {
     pub key: Vec<u8>,
     pub node: Option<SocketAddr>,
     pub data: Option<Vec<u8>>,
 }
 
-impl FindValueResponceMessage {
+impl FindValueResponseMessage {
     pub fn new(key: &[u8], node: Option<&SocketAddr>, data: Option<&[u8]>) -> Self {
         assert!(!(node.is_none() && data.is_none()));
         assert!(!(node.is_some() && data.is_some()));
         if node.is_some() && data.is_none() {
-            FindValueResponceMessage {
+            FindValueResponseMessage {
                 key: key.to_vec(),
                 node: Some(*node.unwrap()),
                 data: None,
             }
         } else {
-            FindValueResponceMessage {
+            FindValueResponseMessage {
                 key: key.to_vec(),
                 node: None,
                 data: Some(data.unwrap().to_vec()),
@@ -290,7 +290,7 @@ impl FindValueResponceMessage {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let header = MessageHeader::new(MessageType::FindValueResponce);
+        let header = MessageHeader::new(MessageType::FindValueResponse);
         let mut bytes = header.to_bytes();
         let mut serializer = AllocSerializer::<512>::default(); //todo bench
         serializer
@@ -305,7 +305,7 @@ impl FindValueResponceMessage {
 mod tests {
     use super::constant::MESSAGE_HEADER_SIZE;
     use super::{FindNodeRequestMessage, MessageHeader, MessageType, PingRequestMessage};
-    use crate::message::{FindValueRequestMessage, PingResponceMessage, StoreValueRequestMessage};
+    use crate::message::{FindValueRequestMessage, PingResponseMessage, StoreValueRequestMessage};
     use openssl::rand::rand_bytes;
 
     #[test]
@@ -400,14 +400,14 @@ mod tests {
     }
 
     #[test]
-    pub fn ping_responce() -> anyhow::Result<()> {
+    pub fn ping_response() -> anyhow::Result<()> {
         //header
-        let header = MessageHeader::new(MessageType::PingResponce);
+        let header = MessageHeader::new(MessageType::PingResponse);
 
-        let req = PingResponceMessage::new();
+        let req = PingResponseMessage::new();
 
         let bytes = req.to_bytes();
-        let (h, r) = PingResponceMessage::from_bytes(&bytes);
+        let (h, r) = PingResponseMessage::from_bytes(&bytes);
         assert_eq!(h, header);
         assert_eq!(r, req);
         Ok(())
