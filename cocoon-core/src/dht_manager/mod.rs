@@ -349,15 +349,11 @@ impl DHTManager {
                     MessageType::FindNodeResponse => {
                         //TODO: did I sent request?
                         //deserialize message
-                        let archived =
-                            rkyv::check_archived_root::<FindNodeResponseMessage>(&buffer).unwrap();
-
-                        let msg: FindNodeResponseMessage =
-                            archived.deserialize(&mut Infallible).unwrap();
+                        let (_, msg) = FindNodeResponseMessage::from_bytes(&buffer);
 
                         event!(
                             Level::DEBUG,
-                            "Received find node response from {}\n(Contains {} nodes)",
+                            "Received find node response from {}. Contains {} nodes)",
                             &sender,
                             msg.nodes.len()
                         );
