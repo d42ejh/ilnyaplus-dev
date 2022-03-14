@@ -89,6 +89,7 @@ impl PingRequestMessage {
     }
 }
 
+///
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
 pub struct FindNodeRequestMessage {
