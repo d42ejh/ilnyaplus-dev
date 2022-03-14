@@ -89,7 +89,7 @@ impl PingRequestMessage {
     }
 }
 
-///
+/// Used to find nodes which closes to a key.
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
 pub struct FindNodeRequestMessage {
