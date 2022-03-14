@@ -19,9 +19,11 @@ impl Bucket {
         }
     }
 
+    /// Add a node to the bucket.
+    /// Do nothing if the bucket is full.
     pub fn add_node(&mut self, node: &Arc<Mutex<Node>>) {
         if self.is_full() {
-            panic!(); //caller should verify this ^
+            return;
         }
         event!(Level::DEBUG, "Add node {}", node.lock().unwrap());
         self.nodes.push_back(node.clone());
@@ -35,6 +37,7 @@ impl Bucket {
         self.nodes.len() >= self.k as usize
     }
 
+    /// Select n nodes from the bucket.
     pub fn select_nodes(&self, desired_count: usize) -> Vec<Arc<Mutex<Node>>> {
         let amount = std::cmp::min(desired_count, self.nodes.len());
         let mut nodes = Vec::new();
