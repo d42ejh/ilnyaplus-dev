@@ -1,13 +1,10 @@
 use crate::block_file::BlockFile;
 use crate::ecrs::{encode_file_to_blocks, CHK};
 use crate::upload_manager::upload_task_info;
-use async_std::fs::{File, OpenOptions};
+use async_std::fs::OpenOptions;
 use async_std::prelude::*;
 use cocoon_core::DHTManager;
-use rkyv::{
-    ser::{serializers::AllocSerializer, Serializer},
-    Archive, Deserialize, Infallible, Serialize,
-};
+use rkyv::ser::{serializers::AllocSerializer, Serializer};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use tracing::{event, Level};

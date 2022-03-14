@@ -3,18 +3,10 @@ use cirrus_core::upload_manager::UploadManager;
 use cirrus_core::Uuid;
 use cocoon_core::DHTManager;
 use cocoon_core::DaemonConfig;
-use futures_lite::stream::StreamExt;
-use rkyv::{
-    archived_root,
-    ser::{serializers::AllocSerializer, Serializer},
-    Archive, Deserialize, Infallible, Serialize,
-};
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
-use std::sync::Mutex;
-use tokio::sync::mpsc;
 use tracing::{event, span, Level};
 use tracing_subscriber;
 

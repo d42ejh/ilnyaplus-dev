@@ -12,7 +12,7 @@ hashbased-keyword-search=[]
 [dependencies]
 tokio = { version = "1", features = ["full","tracing"] }
 openssl = { version = "0.10", features = ["vendored"] }
-pqcrypto = "0.14.2"
+#pqcrypto = "0.14.2"
 async-std = "1.10.0"
 rkyv ={version= "0.7.26",features=["validation"]}
 bytecheck = "0.6.7"

@@ -1,22 +1,15 @@
 mod upload_task;
 mod upload_task_info;
 use crate::block_file::BlockFile;
-use crate::ecrs::{encode_file_to_blocks, KBlock, CHK};
-use async_std::fs::{File, OpenOptions};
+use crate::ecrs::{encode_file_to_blocks, CHK};
+use async_std::fs::OpenOptions;
 use async_std::prelude::*;
 use cocoon_core::DHTManager;
 use quisyn::{ResumeableTask, TaskManager};
-use rkyv::with::AsString;
-use rkyv::{
-    archived_root,
-    ser::{serializers::AllocSerializer, Serializer},
-    Archive, Deserialize, Infallible, Serialize,
-};
-use sqlx::any;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
-use tracing::{event, instrument, span, Level};
+use std::sync::Arc;
+use tracing::{event, Level};
 use upload_task::UploadTask;
 use upload_task_info::{UploadTaskInfo, TASK_SAVE_FILE_NAME};
 use uuid::Uuid;

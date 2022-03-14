@@ -3,20 +3,14 @@ use crate::ecrs::block::*;
 use crate::ecrs::{CHK, SERIALIZED_CHK_BUFFER_SIZE};
 use async_std::fs::{File, OpenOptions};
 use async_std::prelude::*;
-use openssl::hash::{hash, hash_xof, MessageDigest};
+use openssl::hash::{hash, MessageDigest};
 use openssl::rand::rand_bytes;
-use openssl::symm::{decrypt, encrypt, Cipher, Mode};
-use pqcrypto::kem::kyber1024::{public_key_bytes, secret_key_bytes, PublicKey, SecretKey};
-use rkyv::{
-    archived_root,
-    ser::{serializers::AllocSerializer, Serializer},
-    Archive, Deserialize, Infallible, Serialize,
-};
+use openssl::symm::{decrypt, encrypt, Cipher};
+use rkyv::ser::{serializers::AllocSerializer, Serializer};
 use std::io::SeekFrom;
-
 use std::collections::VecDeque;
-use std::path::{Path, PathBuf};
-use tracing::{event, instrument, span, Level};
+use std::path::Path;
+use tracing::{event, Level};
 
 /// encode file to blocks
 /// save the blocks to block files
@@ -258,7 +252,7 @@ pub async fn decode_blocks_to_file(
     let i_block_chk_bf_path = block_file_dir.join("blocks.i.chk");
 
     let mut d_block_bf = BlockFile::open(&d_block_bf_path).await?;
-    let mut d_block_chk_bf = BlockFile::open(&d_block_chk_bf_path).await?;
+    let mut d_block_chk_bf = BlockFile::open(&d_block_chk_bf_path).await?;//TODO no need to use d block chks
     let mut i_block_bf = BlockFile::open(&i_block_bf_path).await?;
     let mut i_block_chk_bf = BlockFile::open(&i_block_chk_bf_path).await?;
 
@@ -382,7 +376,7 @@ fn encrypt_i_block(iblock: &IBlock) -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>) {
         iblock_query_hash,
     )
 }
-
+/*
 pub fn encrypt_k_block(k_block: &KBlock) {
     //serialize
     let mut serializer = AllocSerializer::<2048>::default(); //TODO: For now 2048
@@ -402,6 +396,7 @@ pub fn encrypt_k_block(k_block: &KBlock) {
     let (iv, enc_buf) = encrypt_chacha20_poly1305(&kw_hash, &serialized_k_block_buffer);
     //todo where to store the iv?
 }
+*/
 
 #[must_use]
 fn decrypt_d_block(key: &[u8], iv: &[u8], encrypted_buffer: &[u8]) -> DBlock {
