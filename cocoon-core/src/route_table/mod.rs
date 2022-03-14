@@ -8,10 +8,13 @@ use std::sync::Mutex;
 use std::{net::SocketAddr, sync::Arc};
 use tracing::{event, span, Level};
 
+/// RouteTable
+/// RouteTable for DHTManager.
 pub struct RouteTable {
     k: u16,
     own_node: Node,
     buckets: Vec<Bucket>, //TODO: maybe this isn't necessarily vector
+    /// Useful for checking whether a node is in the buckets or not.
     node_map: HashMap<SocketAddr, Arc<Mutex<Node>>>,
 }
 
