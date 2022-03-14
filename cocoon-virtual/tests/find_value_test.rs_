@@ -11,7 +11,10 @@ async fn find_value_test() -> anyhow::Result<()> {
         .init();
 
     let vnm = VirtualNetworkManager::new(2).await?;
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
     vnm.connect_all_each_other().await?;
+    std::thread::sleep(std::time::Duration::from_secs(2));
 
     let vp0 = &vnm.virtual_peers[0];
     let vp1 = &vnm.virtual_peers[1];
@@ -23,8 +26,15 @@ async fn find_value_test() -> anyhow::Result<()> {
     rand_bytes(&mut rdata)?;
     vp1.force_store(&rkey, &rdata)?;
 
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
     //find value
     vp0.dht_manager.do_find_value(&rkey).await;
+
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    //check
+    assert!(vp0.dht_manager.is_available_on_local(&rkey)?);
 
     Ok(())
 }
