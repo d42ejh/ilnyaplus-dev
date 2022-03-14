@@ -170,20 +170,13 @@ async fn main() -> anyhow::Result<()> {
     let dht_manager = Arc::new(dht_manager);
     let cloned_dht_manager = dht_manager.clone();
 
-    //todo im not sure where to start these atm, todo move
     //download manager
     let dl_manager = DownloadManager::new(&daemon_config.working_directory).await;
     let dl_manager = Arc::new(tokio::sync::Mutex::new(dl_manager));
-    tokio::spawn(async move {
-        //  dl_manager.start();
-    });
 
     //upload manager
     let ul_manager = UploadManager::new(&daemon_config.working_directory, &dht_manager).await?;
     let ul_manager = Arc::new(tokio::sync::Mutex::new(ul_manager));
-    tokio::spawn(async move {
-        //  ul_manager.
-    });
 
     //todo bootstrap and get own address or maybe use public key as an id
 
