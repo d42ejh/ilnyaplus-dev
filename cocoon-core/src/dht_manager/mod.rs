@@ -6,10 +6,6 @@ use crate::utility;
 use cocoon_config::{KVDatabaseConfig, SqliteConfig};
 use constant::MESSAGE_HEADER_SIZE;
 use message::*;
-use rkyv::{
-    ser::{serializers::AllocSerializer, Serializer},
-    Archive, Deserialize, Infallible, Serialize,
-};
 use rocksdb::{Options, ReadOptions, WriteOptions, DB};
 use route_table::{endpoint_to_node_id, RouteTable};
 use rusqlite::{params, Connection, Result};
@@ -371,12 +367,8 @@ impl DHTManager {
                             "Received find value response from {}",
                             &sender
                         );
-                        let archived =
-                            rkyv::check_archived_root::<FindValueResponseMessage>(&buffer).unwrap();
-
-                        let msg: FindValueResponseMessage =
-                            archived.deserialize(&mut Infallible).unwrap();
-                        //todo save data?
+                        let (_, msg) = FindValueResponseMessage::from_bytes(&buffer);
+                        //save data
                     }
                     _ => {
                         unreachable!();
