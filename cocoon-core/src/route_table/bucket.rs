@@ -4,8 +4,10 @@ use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use tracing::{event, span, Level};
 
+/// Represent Bucket.
 pub struct Bucket {
     pub nodes: VecDeque<Arc<Mutex<Node>>>,
+    /// constant 'K'
     k: u16,
 }
 

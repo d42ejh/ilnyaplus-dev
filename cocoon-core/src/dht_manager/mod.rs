@@ -421,7 +421,9 @@ impl DHTManager {
         do_ping_impl(&self.udp_socket, endpoint).await;
     }
 
-    //TODO: maybe return Result<bool>
+    // TODO: maybe return Result<bool>
+    // TODO: maybe only accept (key, data) such that key == hash(data)
+    /// Store a value(data) at the given key on network.
     pub async fn do_store(&self, key: &[u8], data: &[u8]) {
         let request_msg = StoreValueRequestMessage::new(key, data, 10); //todo implement replication level
         let tmp = 10; //TODO implement
@@ -448,6 +450,7 @@ impl DHTManager {
         }
     }
 
+    /// Initiate a find value request.
     pub async fn do_find_value(&self, key: &[u8]) {
         let request_msg = FindValueRequestMessage::new(key);
         //check local first
@@ -497,6 +500,7 @@ impl DHTManager {
         }
     }
 
+    ///
     pub async fn do_find_node(&self, key: &[u8]) {
         let request_msg = FindNodeRequestMessage::new(key);
         let peers;
@@ -521,12 +525,15 @@ impl DHTManager {
         }
     }
 
-    //useful for virtual peer
+    /* dht-dev features */
+
+    /// Convinience function for cocoon-virtual.
+    #[cfg(feature = "dht-dev")]
     pub fn local_endpoint(&self) -> SocketAddr {
         self.udp_socket.local_addr().unwrap()
     }
 
-    /* dht-dev features */
+    /// Convinience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]
     pub fn dev_store(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
