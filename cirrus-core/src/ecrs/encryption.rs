@@ -501,7 +501,6 @@ fn calculate_nth_depth_i_block_count(d_block_count: u64, nth: u64) -> u64 {
     0
 }
 
-//todo write test
 fn calculate_depth_zero_i_block_count(d_block_count: u64) -> u64 {
     if d_block_count == 1 {
         return 1;

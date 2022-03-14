@@ -5,7 +5,8 @@ refactor
 polish up dht
 daemon
 # TODO
-- [] resumeable task for encoding, downloading
+- [] load daemon serve address from config file.
+- [] Implement resumeable task for encoding, downloading.
 - [] use tower library
 - [] replace all inappropriate panic! macros with Result<T>
 - [] replace all inappropriate assert! macros with debug_assert!
