@@ -2,7 +2,7 @@ use cocoon_virtual::VirtualNetworkManager;
 use openssl::rand::rand_bytes;
 use tracing::{event, Level};
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn find_value_test() -> anyhow::Result<()> {
     //logger
     tracing_subscriber::fmt()
