@@ -62,10 +62,12 @@ impl VirtualNetworkManager {
             for j in i + 1..self.virtual_peers.len() {
                 let vp1 = &self.virtual_peers[i];
                 let vp2 = &self.virtual_peers[j];
+
+                event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
+
                 vp1.dht_manager
                     .do_ping(&vp2.dht_manager.local_endpoint())
                     .await;
-                event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
             }
         }
 
