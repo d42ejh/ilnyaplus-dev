@@ -6,14 +6,16 @@ use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
 use tracing::{event, instrument, span, Level};
 
-// BlockFile supports
-// read from nth block
-// write to nth block
-// todo write doc
+/// BlockFile
+/// BlockFile offers read from nth block, write to nth block.
 pub struct BlockFile {
+    /// File handle
     file: File,
+    /// BlockFile path.
     path: PathBuf,
+    /// Max span size.
     max_span_size: u32,
+    /// Number of current blocks.
     n: u32,
 }
 
@@ -90,6 +92,8 @@ impl BlockFile {
         })
     }
 
+    /// Write data to nth block.
+    /// panic if buffer.len() > self.max_span_size.
     pub async fn write_nth_block(&mut self, nth: usize, buffer: &[u8]) -> anyhow::Result<()> {
         assert!((self.max_span_size as usize) >= buffer.len());
 
@@ -127,6 +131,7 @@ impl BlockFile {
         Ok(())
     }
 
+    /// Read data from nth block.
     pub async fn read_nth_block(&mut self, nth: usize) -> anyhow::Result<Vec<u8>> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
 
