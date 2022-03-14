@@ -190,7 +190,9 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let addr = "[::1]:50051".parse().unwrap(); //todo from config
+    
     event!(Level::DEBUG, "serve service on {}", addr);
+    
     Server::builder()
         .add_service(IlnyaplusRpcServiceServer::new(rpc_sevice_server))
         .serve(addr)

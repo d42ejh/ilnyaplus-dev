@@ -500,7 +500,7 @@ impl DHTManager {
         }
     }
 
-    ///
+    /// Initiate a find node request.
     pub async fn do_find_node(&self, key: &[u8]) {
         let request_msg = FindNodeRequestMessage::new(key);
         let peers;
