@@ -18,6 +18,7 @@ use tracing::{event, span, Level};
 
 const DHT_DATA_COLUMN_FAMILY: &str = "dht-data-cf";
 
+/// DHTManager
 /// TODO implement route table save&load (with file)
 pub struct DHTManager {
     pub route_table: Arc<Mutex<RouteTable>>,
@@ -69,6 +70,7 @@ impl DHTManager {
 
     //TODO: maybe separate each match handlers to functions
     //TODO: test with malformed messages
+    /// Start receiving messages from network
     pub async fn start_receive(&self) {
         let cloned_socket = self.udp_socket.clone();
         let cloned_route_table = self.route_table.clone();
@@ -396,7 +398,7 @@ impl DHTManager {
         });
     }
 
-    // Check whether there is value with the given key on kvdb or not
+    /// Check whether there is value with the given key on kvdb or not.
     pub fn is_available_on_local(&self, key: &[u8]) -> anyhow::Result<bool> {
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
 
@@ -408,6 +410,7 @@ impl DHTManager {
         }
     }
 
+    /// Initiate a ping request.
     pub async fn do_ping(&self, endpoint: &SocketAddr) {
         {
             //insert to ping list
