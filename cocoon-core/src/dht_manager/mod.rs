@@ -368,7 +368,25 @@ impl DHTManager {
                             &sender
                         );
                         let (_, msg) = FindValueResponseMessage::from_bytes(&buffer);
-                        //save data
+                        if msg.data.is_some() && msg.node.is_some() {
+                            //malformed
+                            //TODO maybe block the sender
+                            return;
+                        }
+                        if msg.data.is_some() {
+                            //save data
+                            let cfh = cloned_kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
+                            cloned_kvdb
+                                .put_cf(cfh, &msg.key, &msg.data.unwrap())
+                                .unwrap();
+                            return;
+                        }
+                        if msg.node.is_some() {
+                            //TODO
+                            //maybe disable this feature for privacy reasons
+                            event!(Level::ERROR, "TODO");
+                            return;
+                        }
                     }
                     _ => {
                         unreachable!();
