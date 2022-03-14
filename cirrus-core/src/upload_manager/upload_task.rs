@@ -11,6 +11,7 @@ use tracing::{event, Level};
 use upload_task_info::{UploadTaskInfo, TASK_SAVE_FILE_NAME};
 use uuid::Uuid;
 
+/// Represents upload task.
 pub struct UploadTask {
     pub uuid: Uuid,
     pub file_path: PathBuf,

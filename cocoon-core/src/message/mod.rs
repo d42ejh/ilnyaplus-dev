@@ -7,6 +7,9 @@ use rkyv::{
 use std::net::SocketAddr;
 use tracing::{event, Level};
 
+/// Network messages.
+
+/// Network message types.
 #[derive(Debug, PartialEq, Eq, FromPrimitive)]
 pub enum MessageType {
     PingRequest = 1,
@@ -18,6 +21,8 @@ pub enum MessageType {
     FindValueResponse = 7,
 }
 
+/// Network message header.
+/// For now, only contains a message_type.
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
 pub struct MessageHeader {
@@ -52,9 +57,10 @@ impl MessageHeader {
 }
 //TODO: maybe it is possible to refactor these with traits or enum
 
+/// Ping request message.
+/// Peers which received this will reply with PingResponseMessage.
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
 #[archive_attr(derive(CheckBytes, Debug))]
-
 pub struct PingRequestMessage {}
 
 impl PingRequestMessage {
