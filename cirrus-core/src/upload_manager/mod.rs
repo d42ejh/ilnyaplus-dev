@@ -142,7 +142,6 @@ impl UploadManager {
 impl ResumeableTask for UploadTask {
     fn resume(&self) {
         //TODO
-        
     }
     fn is_done(&self) -> bool {
         false

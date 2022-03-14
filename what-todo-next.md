@@ -1,9 +1,5 @@
 # what to do next
-make ping test works
-and write dht op tests with it
-refactor
-polish up dht
-daemon
+implement virtual random
 # TODO
 - [] load daemon serve address from config file.
 - [] Implement resumeable task for encoding, downloading.

@@ -81,6 +81,11 @@ impl VirtualNetworkManager {
         Ok(())
     }
     */
+
+    pub async fn random(&self) -> anyhow::Result<()> {
+        //todo
+        Ok(())
+    }
 }
 
 #[cfg(test)]

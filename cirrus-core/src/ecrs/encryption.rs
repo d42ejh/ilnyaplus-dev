@@ -7,8 +7,8 @@ use openssl::hash::{hash, MessageDigest};
 use openssl::rand::rand_bytes;
 use openssl::symm::{decrypt, encrypt, Cipher};
 use rkyv::ser::{serializers::AllocSerializer, Serializer};
-use std::io::SeekFrom;
 use std::collections::VecDeque;
+use std::io::SeekFrom;
 use std::path::Path;
 use tracing::{event, Level};
 
@@ -252,7 +252,7 @@ pub async fn decode_blocks_to_file(
     let i_block_chk_bf_path = block_file_dir.join("blocks.i.chk");
 
     let mut d_block_bf = BlockFile::open(&d_block_bf_path).await?;
-    let mut d_block_chk_bf = BlockFile::open(&d_block_chk_bf_path).await?;//TODO no need to use d block chks
+    let mut d_block_chk_bf = BlockFile::open(&d_block_chk_bf_path).await?; //TODO no need to use d block chks
     let mut i_block_bf = BlockFile::open(&i_block_bf_path).await?;
     let mut i_block_chk_bf = BlockFile::open(&i_block_chk_bf_path).await?;
 

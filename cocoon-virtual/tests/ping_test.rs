@@ -1,7 +1,6 @@
 use cocoon_virtual::VirtualNetworkManager;
 use tracing::{event, Level};
 
-
 /// Start two virtual peers and test the ping functions.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn ping_test() -> anyhow::Result<()> {
