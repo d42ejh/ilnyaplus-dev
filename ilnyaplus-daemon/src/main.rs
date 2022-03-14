@@ -156,6 +156,9 @@ async fn main() -> anyhow::Result<()> {
 
     event!(Level::INFO, "cocoon daemon launched.");
 
+    //print config
+    event!(Level::DEBUG, "{:?}", daemon_config);
+
     //dht manager stuffs
     let bind_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 0); //todo from config
     let dht_manager = DHTManager::new(
@@ -169,15 +172,14 @@ async fn main() -> anyhow::Result<()> {
 
     //todo im not sure where to start these atm, todo move
     //download manager
-    let cd = std::env::current_dir().unwrap(); //temp
-    let dl_manager = DownloadManager::new(&cd).await; //todo read from config
+    let dl_manager = DownloadManager::new(&daemon_config.working_directory).await;
     let dl_manager = Arc::new(tokio::sync::Mutex::new(dl_manager));
     tokio::spawn(async move {
         //  dl_manager.start();
     });
 
     //upload manager
-    let ul_manager = UploadManager::new(&cd, &dht_manager).await?;
+    let ul_manager = UploadManager::new(&daemon_config.working_directory, &dht_manager).await?;
     let ul_manager = Arc::new(tokio::sync::Mutex::new(ul_manager));
     tokio::spawn(async move {
         //  ul_manager.

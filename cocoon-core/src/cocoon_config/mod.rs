@@ -13,9 +13,9 @@ pub struct SqliteConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct DaemonConfig {
-    //  pub network_manager_config: NetworkManagerConfig,
     pub kv_database_config: KVDatabaseConfig,
     pub sqlite_config: SqliteConfig,
+    pub working_directory: PathBuf,
 }
 
 impl DaemonConfig {
@@ -34,6 +34,14 @@ impl DaemonConfig {
         }
         let mut config = Config::default();
         config.merge(File::from(config_file_path).required(true))?;
+
+        //create working directory if not exist
+        let working_dir = PathBuf::from(config.get_str("working_directory")?);
+        assert!(!working_dir.is_file()); //reject file path
+        if !working_dir.is_dir() {
+            std::fs::create_dir(working_dir).unwrap();
+        }
+
         config.try_into()
     }
 }

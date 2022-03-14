@@ -1,3 +1,5 @@
+working_directory="./daemon_working_dir"
+
 [network_manager_config]
 k=20
 route_table_buckets_capacity=20
