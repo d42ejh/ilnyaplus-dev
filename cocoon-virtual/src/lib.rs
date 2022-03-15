@@ -4,7 +4,9 @@ use openssl::rand::rand_bytes;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tracing::{event, Level};
+//https://www.reddit.com/r/rust/comments/f4zldz/i_audited_3_different_implementation_of_async/
 
 pub struct VirtualPeer {
     pub dht_manager: Arc<DHTManager>,
@@ -42,6 +44,7 @@ impl VirtualPeer {
 
 pub struct VirtualNetworkManager {
     pub virtual_peers: Vec<Arc<VirtualPeer>>,
+    last_stored_key: Arc<RwLock<Vec<u8>>>,
 }
 
 impl VirtualNetworkManager {
@@ -54,6 +57,7 @@ impl VirtualNetworkManager {
         }
         Ok(Self {
             virtual_peers: vpeers,
+            last_stored_key: Arc::new(RwLock::new(vec![0; 64])),
         })
     }
 
@@ -73,14 +77,6 @@ impl VirtualNetworkManager {
 
         Ok(())
     }
-    /*
-    pub async fn store(&self, peer_index: usize) -> anyhow::Result<()> {
-        self.virtual_peers[peer_index]
-            .dht_manager
-            .do_store(key, data);
-        Ok(())
-    }
-    */
 
     pub async fn random(&self) -> anyhow::Result<()> {
         assert!(self.virtual_peers.len() >= 2);
@@ -101,7 +97,7 @@ impl VirtualNetworkManager {
         let other_vp = &self.virtual_peers[others[ri]];
 
         //do something with the choosed peers
-        let r = rng.gen_range(0..=1);
+        let r = rng.gen_range(0..=3);
         match r {
             0 => {
                 //ping
@@ -129,6 +125,10 @@ impl VirtualNetworkManager {
                 rand_bytes(&mut rk)?;
                 rand_bytes(&mut rd)?;
                 choosed_vp.dht_manager.do_store(&rk, &rd).await;
+                {
+                    let mut w = self.last_stored_key.write().await;
+                    *w = rk;
+                }
             }
             2 => {
                 //find value
@@ -138,6 +138,23 @@ impl VirtualNetworkManager {
                     choosed_vp.name,
                     other_vp.name
                 );
+                choosed_vp
+                    .dht_manager
+                    .do_find_value(&*self.last_stored_key.read().await)
+                    .await;
+            }
+            3 => {
+                //find node
+                event!(
+                    Level::INFO,
+                    "Find node request from {} to {}",
+                    choosed_vp.name,
+                    other_vp.name
+                );
+                choosed_vp
+                    .dht_manager
+                    .do_find_node(&*self.last_stored_key.read().await)
+                    .await;
             }
             _ => {
                 unreachable!();
