@@ -107,7 +107,7 @@ impl VirtualNetworkManager {
                 //ping
                 event!(
                     Level::INFO,
-                    "Ping from {} to {}",
+                    "Ping request from {} to {}",
                     choosed_vp.name,
                     other_vp.name
                 );
@@ -117,18 +117,27 @@ impl VirtualNetworkManager {
                     .await;
             }
             1 => {
+                //store
                 event!(
                     Level::INFO,
-                    "Store from {} to {}",
+                    "Store value request from {} to {}",
                     choosed_vp.name,
                     other_vp.name
                 );
-                //store
                 let mut rk = vec![0; 64];
                 let mut rd = vec![0; 64];
                 rand_bytes(&mut rk)?;
                 rand_bytes(&mut rd)?;
                 choosed_vp.dht_manager.do_store(&rk, &rd).await;
+            }
+            2 => {
+                //find value
+                event!(
+                    Level::INFO,
+                    "Find value request from {} to {}",
+                    choosed_vp.name,
+                    other_vp.name
+                );
             }
             _ => {
                 unreachable!();
