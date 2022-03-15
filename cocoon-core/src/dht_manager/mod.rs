@@ -527,13 +527,13 @@ impl DHTManager {
 
     /* dht-dev features */
 
-    /// Convinience function for cocoon-virtual.
+    /// Convenience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]
     pub fn local_endpoint(&self) -> SocketAddr {
         self.udp_socket.local_addr().unwrap()
     }
 
-    /// Convinience function for cocoon-virtual.
+    /// Convenience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]
     pub fn dev_store(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
