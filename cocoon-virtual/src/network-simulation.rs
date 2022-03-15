@@ -14,7 +14,10 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     event!(Level::INFO, "Network simulation.");
-    let vnm = VirtualNetworkManager::new(10).await?; //for now 10
-
+    let vnm = VirtualNetworkManager::new(5).await?; //for now 10
+    loop {
+        vnm.random().await.unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
     Ok(())
 }

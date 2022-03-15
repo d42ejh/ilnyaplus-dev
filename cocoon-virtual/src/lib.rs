@@ -83,7 +83,57 @@ impl VirtualNetworkManager {
     */
 
     pub async fn random(&self) -> anyhow::Result<()> {
-        //todo
+        assert!(self.virtual_peers.len() >= 2);
+
+        use rand::prelude::*;
+        //choose a random peer
+        let mut rng = thread_rng();
+        let choosed_index = rng.gen_range(0..self.virtual_peers.len());
+        let choosed_vp = &self.virtual_peers[choosed_index];
+
+        let others: Vec<usize> = (0..self.virtual_peers.len())
+            .into_iter()
+            .filter(|&i| i != choosed_index)
+            .collect();
+
+        let ri = rng.gen_range(0..others.len());
+        assert_ne!(others[ri], choosed_index);
+        let other_vp = &self.virtual_peers[others[ri]];
+
+        //do something with the choosed peers
+        let r = rng.gen_range(0..=1);
+        match r {
+            0 => {
+                //ping
+                event!(
+                    Level::INFO,
+                    "Ping from {} to {}",
+                    choosed_vp.name,
+                    other_vp.name
+                );
+                choosed_vp
+                    .dht_manager
+                    .do_ping(&other_vp.dht_manager.local_endpoint())
+                    .await;
+            }
+            1 => {
+                event!(
+                    Level::INFO,
+                    "Store from {} to {}",
+                    choosed_vp.name,
+                    other_vp.name
+                );
+                //store
+                let mut rk = vec![0; 64];
+                let mut rd = vec![0; 64];
+                rand_bytes(&mut rk)?;
+                rand_bytes(&mut rd)?;
+                choosed_vp.dht_manager.do_store(&rk, &rd).await;
+            }
+            _ => {
+                unreachable!();
+            }
+        }
         Ok(())
     }
 }
