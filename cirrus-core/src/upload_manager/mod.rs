@@ -9,6 +9,7 @@ use quisyn::{ResumeableTask, TaskManager};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{event, Level};
 use upload_task::UploadTask;
 use upload_task_info::{UploadTaskInfo, TASK_SAVE_FILE_NAME};
@@ -19,8 +20,8 @@ use uuid::Uuid;
 
 pub struct UploadManager {
     pub dht_manager: Arc<DHTManager>,
-    pub tasks: Vec<Arc<UploadTask>>, //todo maybe delete this field
-    pub task_map: HashMap<Uuid, Arc<UploadTask>>,
+    pub tasks: Vec<Arc<Mutex<UploadTask>>>, //todo maybe delete this field
+    pub task_map: HashMap<Uuid, Arc<Mutex<UploadTask>>>,
     working_directory: PathBuf,
 }
 
@@ -53,8 +54,8 @@ impl UploadManager {
             //found task save directory
             let info = UploadTaskInfo::from_bytes(&buffer);
             let task = UploadTask::from_info(&info);
-            let task = Arc::new(task);
-            task_map.insert(task.uuid, task.clone());
+            let task = Arc::new(Mutex::new(task));
+            task_map.insert(task.lock().await.uuid, task.clone());
             tasks.push(task);
         }
         event!(Level::DEBUG, "Found {} upload tasks", tasks.len());
@@ -96,16 +97,20 @@ impl UploadManager {
         assert!(self.working_directory.is_dir());
 
         //create new upload task and hold it in task_map and tasks
-        let new_task = Arc::new(UploadTask::new(&self.working_directory, file_path));
-        self.task_map.insert(new_task.uuid, new_task.clone());
+        let new_task = Arc::new(Mutex::new(UploadTask::new(
+            &self.working_directory,
+            file_path,
+        )));
+        self.task_map
+            .insert(new_task.lock().await.uuid, new_task.clone());
         self.tasks.push(new_task);
         Ok(())
     }
 
-    pub fn task_infos(&self) -> Vec<UploadTaskInfo> {
+    pub async fn task_infos(&self) -> Vec<UploadTaskInfo> {
         let mut infos = Vec::new();
         for task in &self.tasks {
-            infos.push(task.info());
+            infos.push(task.lock().await.info());
         }
         infos
     }
@@ -123,12 +128,12 @@ impl UploadManager {
         let dht_manager = self.dht_manager.clone();
         tokio::task::spawn_blocking(move || {
             tokio::spawn(async move {
-                if let Err(e) = task.start_encode().await {
+                if let Err(e) = task.lock().await.start_encode().await {
                     panic!("todo handle");
                     //TODO do something!
                 };
                 //upload
-                if let Err(e) = task.upload(&dht_manager).await {
+                if let Err(e) = task.lock().await.upload(&dht_manager).await {
                     panic!("todo handle");
                     //TODO do something!
                 }

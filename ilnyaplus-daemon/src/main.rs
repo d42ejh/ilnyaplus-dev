@@ -79,7 +79,7 @@ impl IlnyaplusRpcService for DaemonRpcService {
         let task_infos;
         {
             let ul_manager = self.ul_manager.lock().await;
-            task_infos = ul_manager.task_infos();
+            task_infos = ul_manager.task_infos().await;
         }
 
         //convert UploadTaskInfo to proto's one

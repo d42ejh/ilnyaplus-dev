@@ -74,7 +74,7 @@ impl UploadTask {
 
     /// This function is intended to called from tokio::task::spawnblocking
     /// So it is okay to block long time in this function
-    pub async fn start_encode(&self) -> anyhow::Result<()> {
+    pub async fn start_encode(&mut self) -> anyhow::Result<()> {
         event!(Level::DEBUG, "Start encode!!!!!!!!!!!");
         let is_encode_done;
         {
@@ -87,6 +87,7 @@ impl UploadTask {
             //open as read only
 
             let root_i_block_chk = encode_file_to_blocks(&file_path, &working_directory).await?;
+            self.root_i_block_chk = Some(root_i_block_chk);
 
             /*
             TODO
