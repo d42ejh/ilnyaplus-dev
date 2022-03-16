@@ -19,6 +19,7 @@ pub struct UploadTask {
     pub is_encode_done: Arc<Mutex<bool>>, //I don't want to bother with atomic
     pub is_upload_done: Arc<Mutex<bool>>,
     pub working_directory: PathBuf,
+    pub root_i_block_chk: Option<CHK>,
 }
 
 impl UploadTask {
@@ -52,6 +53,7 @@ impl UploadTask {
             is_encode_done: Arc::new(Mutex::new(false)),
             is_upload_done: Arc::new(Mutex::new(false)),
             working_directory: task_working_dir,
+            root_i_block_chk: None,
         }
     }
 
@@ -63,6 +65,10 @@ impl UploadTask {
             is_encode_done: Arc::new(Mutex::new(info.is_encode_done)),
             is_upload_done: Arc::new(Mutex::new(info.is_upload_done)),
             working_directory: PathBuf::from(&info.working_directory_string),
+            root_i_block_chk: match &info.root_i_block_chk {
+                Some(v) => Some(CHK::from_bytes(v)),
+                None => None,
+            },
         }
     }
 
@@ -166,6 +172,10 @@ impl UploadTask {
             file_path_string: self.file_path.to_str().unwrap().to_owned(),
             file_size: self.file_size,
             working_directory_string: self.working_directory.to_str().unwrap().to_owned(),
+            root_i_block_chk: match &self.root_i_block_chk {
+                Some(chk) => Some(chk.serialize()),
+                None => None,
+            },
         }
     }
 

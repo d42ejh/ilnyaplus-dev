@@ -14,6 +14,7 @@ pub struct UploadTaskInfo {
     pub file_path_string: String,
     pub file_size: u64,
     pub working_directory_string: String,
+    pub root_i_block_chk: Option<Vec<u8>>,
 }
 
 impl UploadTaskInfo {
