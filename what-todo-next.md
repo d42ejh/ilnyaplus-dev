@@ -1,6 +1,7 @@
 # what to do next
 implement virtual random
 # TODO
+- [] file sha hash in root block
 - [] load daemon serve address from config file.
 - [] Implement resumeable task for encoding, downloading.
 - [] use tower library
