@@ -16,6 +16,14 @@ service ilnyaplusRPCService{
     rpc StartUploadTask(StartUploadTaskRequestMessage) returns (StartUploadTaskResponseMessage){}
 
 }
+/*Common Types*/
+message CHK{
+    bytes key=1;
+    bytes iv=2;
+    bytes query=3;
+    uint32 block_type=4;
+    uint32 bf_index=5;
+}
 
 /* Request Messages*/
 
@@ -48,6 +56,7 @@ message UploadTaskInfoResponseMessage{
         uint64 file_size=3;
         bool is_encode_done=4;
         bool is_upload_done=5;
+        optional CHK root_i_block_chk=6;
     }
     repeated UploadTaskInfo task_infos=1;
 }

@@ -66,7 +66,7 @@ impl UploadTask {
             is_upload_done: Arc::new(Mutex::new(info.is_upload_done)),
             working_directory: PathBuf::from(&info.working_directory_string),
             root_i_block_chk: match &info.root_i_block_chk {
-                Some(v) => Some(CHK::from_bytes(v)),
+                Some(chk) => Some(chk.to_owned()),
                 None => None,
             },
         }
@@ -174,7 +174,7 @@ impl UploadTask {
             file_size: self.file_size,
             working_directory_string: self.working_directory.to_str().unwrap().to_owned(),
             root_i_block_chk: match &self.root_i_block_chk {
-                Some(chk) => Some(chk.serialize()),
+                Some(chk) => Some(chk.to_owned()),
                 None => None,
             },
         }

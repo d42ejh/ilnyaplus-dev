@@ -16,7 +16,7 @@ use ilnyaplus_messages::{
     ilnyaplus::{
         ilnyaplus_rpc_service_server::{IlnyaplusRpcService, IlnyaplusRpcServiceServer},
         upload_task_info_response_message::UploadTaskInfo,
-        UploadTaskInfoRequestMessage, UploadTaskInfoResponseMessage,
+        Chk, UploadTaskInfoRequestMessage, UploadTaskInfoResponseMessage,
     },
     *,
 };
@@ -91,6 +91,16 @@ impl IlnyaplusRpcService for DaemonRpcService {
                 file_size: ti.file_size,
                 is_encode_done: ti.is_encode_done,
                 is_upload_done: ti.is_upload_done,
+                root_i_block_chk: match &ti.root_i_block_chk {
+                    Some(chk) => Some(Chk {
+                        key: chk.key.to_owned(),
+                        iv: chk.iv.to_owned(),
+                        query: chk.query.to_owned(),
+                        block_type: chk.block_type,
+                        bf_index: chk.bf_index,
+                    }),
+                    None => None,
+                },
             })
             .collect();
 

@@ -70,12 +70,13 @@ async fn main() -> anyhow::Result<()> {
                 //todo maybe implement Display for task info
                 println!("Upload Task #{}", count);
                 println!(
-                    "ID: {}\nFilePath: {}\nFileSize: {}\nIsEncodeDone: {}\nIsUploadDone: {}",
+                    "ID: {}\nFilePath: {}\nFileSize: {}\nIsEncodeDone: {}\nIsUploadDone: {}\nCHK: {:?}",
                     task_info.uuid,
                     task_info.file_path,
                     task_info.file_size,
                     task_info.is_encode_done,
-                    task_info.is_upload_done
+                    task_info.is_upload_done,
+                    task_info.root_i_block_chk
                 );
                 println!();
                 count += 1;
