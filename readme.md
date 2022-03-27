@@ -1,5 +1,5 @@
 # ilnyaplus
-ilnyaplus <= cocoon(DHT) & cirrus(ECRS)
+=cocoon(DHT) + cirrus(ECRS)
 
 # Progress
 Still working in progress.  
