@@ -1,7 +1,6 @@
 # what to do next
 
 # TODO
-- []
 - [] file sha hash in root block
 - [] load daemon serve address from config file.
 - [] Implement resumeable task for encoding, downloading.
