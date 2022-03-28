@@ -111,8 +111,12 @@ impl UploadTask {
         Ok(())
     }
 
-    //upload encoded blocks with DHTManager
-    pub async fn upload(&self, dht_manager: &Arc<DHTManager>) -> anyhow::Result<()> {
+    /// Upload encoded blocks with DHTManager.
+    pub async fn upload(
+        &self,
+        dht_manager: &Arc<DHTManager>,
+        store_locally: bool,
+    ) -> anyhow::Result<()> {
         //todo make block file names constants
         //here and in ecrs::encode_file_to_blocks
 
@@ -139,6 +143,11 @@ impl UploadTask {
             dht_manager
                 .do_store(&d_block_chk.key, &encrypted_d_block_buffer)
                 .await; //upload DBlock
+
+            //store locally
+            if store_locally {
+                dht_manager.store_on_local(&d_block_chk.key, &encrypted_d_block_buffer);
+            }
         }
 
         drop(d_block_bf);
@@ -154,6 +163,11 @@ impl UploadTask {
             dht_manager
                 .do_store(&i_block_chk.key, &encrypted_i_block_buffer)
                 .await; //upload IBlock
+
+            //store locally
+            if store_locally {
+                dht_manager.store_on_local(&i_block_chk.key, &encrypted_i_block_buffer);
+            }
         }
 
         event!(Level::DEBUG, "Done uploading of {:?}", self.uuid);

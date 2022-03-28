@@ -132,8 +132,10 @@ impl UploadManager {
                     panic!("todo handle");
                     //TODO do something!
                 };
+                
                 //upload
-                if let Err(e) = task.lock().await.upload(&dht_manager).await {
+                // TODO: for now always store locally is true
+                if let Err(e) = task.lock().await.upload(&dht_manager, true).await {
                     panic!("todo handle");
                     //TODO do something!
                 }
