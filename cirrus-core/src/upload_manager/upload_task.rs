@@ -127,8 +127,7 @@ impl UploadTask {
         debug_assert!(i_block_bf_path.is_file());
         debug_assert!(i_block_chk_bf_path.is_file());
 
-        //upload DBlocks and its CHKs
-
+        //upload all DBlocks and its CHKs
         //open bf files
         let mut d_block_bf = BlockFile::open(&d_block_bf_path).await?;
         let mut d_block_chk_bf = BlockFile::open(&d_block_chk_bf_path).await?;
@@ -145,10 +144,10 @@ impl UploadTask {
         drop(d_block_bf);
         drop(d_block_chk_bf);
 
+        // upload all IBlocks
         //open bf files
         let mut i_block_bf = BlockFile::open(&i_block_bf_path).await?;
         let mut i_block_chk_bf = BlockFile::open(&i_block_chk_bf_path).await?;
-        //IBlocks
         for i in 0..i_block_bf.n() as usize {
             let encrypted_i_block_buffer = i_block_bf.read_nth_block(i).await?;
             let i_block_chk = CHK::from_bytes(&i_block_chk_bf.read_nth_block(i).await?);

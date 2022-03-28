@@ -28,7 +28,7 @@ impl VirtualPeer {
         })
     }
 
-    /// Use dht-dev feature and store random data at random key.
+    /// Store random data at random key.
     /// Returns stored (key,data)
     pub fn force_store(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
         event!(
@@ -37,7 +37,7 @@ impl VirtualPeer {
             self.name,
             hex::encode(key)
         );
-        self.dht_manager.dev_store(&key, &data)?;
+        self.dht_manager.store_on_local(&key, &data)?;
         Ok(())
     }
 }

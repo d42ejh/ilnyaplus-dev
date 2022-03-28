@@ -424,6 +424,7 @@ impl DHTManager {
     // TODO: maybe return Result<bool>
     // TODO: maybe only accept (key, data) such that key == hash(data)
     /// Store a value(data) at the given key on network.
+    /// This function will not store the given data locally.
     pub async fn do_store(&self, key: &[u8], data: &[u8]) {
         let request_msg = StoreValueRequestMessage::new(key, data, 10); //todo implement replication level
         let tmp = 10; //TODO implement
@@ -525,20 +526,18 @@ impl DHTManager {
         }
     }
 
-    /* dht-dev features */
+    /// Store a value to kvdb.
+    pub fn store_on_local(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
+        let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
+        self.kvdb.put_cf(cfh, key, data)?;
+        Ok(())
+    }
 
+    /* dht-dev features */
     /// Convenience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]
     pub fn local_endpoint(&self) -> SocketAddr {
         self.udp_socket.local_addr().unwrap()
-    }
-
-    /// Convenience function for cocoon-virtual.
-    #[cfg(feature = "dht-dev")]
-    pub fn dev_store(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
-        let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
-        self.kvdb.put_cf(cfh, key, data)?;
-        Ok(())
     }
 }
 
