@@ -1,4 +1,5 @@
 # what to do next
+Implement download features and test upload-download
 
 # TODO
 - [] file sha hash in root block
