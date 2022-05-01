@@ -181,7 +181,7 @@ async fn main() -> anyhow::Result<()> {
     let cloned_dht_manager = dht_manager.clone();
 
     //download manager
-    let dl_manager = DownloadManager::new(&daemon_config.working_directory).await;
+    let dl_manager = DownloadManager::new(&daemon_config.working_directory, &dht_manager).await;
     let dl_manager = Arc::new(tokio::sync::Mutex::new(dl_manager));
 
     //upload manager
