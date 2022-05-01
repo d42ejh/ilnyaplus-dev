@@ -533,6 +533,15 @@ impl DHTManager {
         Ok(())
     }
 
+    /// Get value with the given key from kvdb
+    /// Returns Ok(None) if not found
+    pub fn get_value_local(&self, key: &[u8]) -> anyhow::Result<Option<Vec<u8>>> {
+        let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
+        self.kvdb
+            .get_cf(cfh, key)
+            .map_err(|e| anyhow::Error::from(e))
+    }
+
     /* dht-dev features */
     /// Convenience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]

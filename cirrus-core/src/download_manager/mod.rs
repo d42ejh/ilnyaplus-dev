@@ -27,7 +27,9 @@ impl DownloadManager {
     }
 
     // Register a donwload task
-    pub async fn download(&self, top_i_block_chk: &CHK) -> anyhow::Result<()> {
+    pub async fn add_download_task(&mut self, top_i_block_chk: &CHK) -> anyhow::Result<()> {
+        let new_task = DownloadTask::new(&self.working_directory, top_i_block_chk);
+        self.tasks.push(new_task);
         Ok(())
         //todo
     }

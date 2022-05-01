@@ -20,7 +20,7 @@ use uuid::Uuid;
 
 pub struct UploadManager {
     pub dht_manager: Arc<DHTManager>,
-    pub tasks: Vec<Arc<Mutex<UploadTask>>>, //todo maybe delete this field
+    pub tasks: Vec<Arc<Mutex<UploadTask>>>,
     pub task_map: HashMap<Uuid, Arc<Mutex<UploadTask>>>,
     working_directory: PathBuf,
 }
@@ -132,7 +132,7 @@ impl UploadManager {
                     panic!("todo handle");
                     //TODO do something!
                 };
-                
+
                 //upload
                 // TODO: for now always store locally is true
                 if let Err(e) = task.lock().await.upload(&dht_manager, true).await {
