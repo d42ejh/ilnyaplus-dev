@@ -644,14 +644,15 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn d_block_enc_dec_test() {
+    async fn d_block_enc_dec_test() -> anyhow::Result<()> {
         let mut rb = vec![0; DBLOCK_SIZE_IN_BYTES as usize];
         rand_bytes(&mut rb).unwrap();
         let db = DBlock::new(&rb);
         let (key, iv, enc_buf, qh) = encrypt_d_block(&db);
-        let ddb = decrypt_d_block(&key, &iv, &enc_buf);
+        let ddb = decrypt_d_block(&key, &iv, &enc_buf)?;
         assert_eq!(db.data, ddb.data);
         assert_eq!(db.header, ddb.header);
+        Ok(())
     }
 
     #[tokio::test]
@@ -673,7 +674,7 @@ mod tests {
         let (key, iv, enc_buf, qh) = encrypt_i_block(&ib);
 
         //try decrypt
-        let i_block = decrypt_i_block(&key, &iv, &enc_buf);
+        let i_block = decrypt_i_block(&key, &iv, &enc_buf)?;
         assert_eq!(i_block.chks, ib.chks);
         assert_eq!(i_block.header, ib.header);
         assert!(i_block.metadata.is_some() && ib.metadata.is_some());
@@ -691,7 +692,7 @@ mod tests {
         let ib = IBlock::new(&chks);
         let (key, iv, enc_buf, qh) = encrypt_i_block(&ib);
         //try decrypt
-        let i_block = decrypt_i_block(&key, &iv, &enc_buf);
+        let i_block = decrypt_i_block(&key, &iv, &enc_buf)?;
         assert_eq!(i_block.chks, ib.chks);
         assert_eq!(i_block.header, ib.header);
         assert!(i_block.metadata.is_none() && ib.metadata.is_none());
