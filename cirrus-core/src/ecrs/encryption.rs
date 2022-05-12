@@ -1,6 +1,7 @@
 use crate::block_file::BlockFile;
 use crate::ecrs::block::*;
 use crate::ecrs::{CHK, SERIALIZED_CHK_BUFFER_SIZE};
+use anyhow::Result;
 use async_std::fs::{File, OpenOptions};
 use async_std::prelude::*;
 use openssl::hash::{hash, MessageDigest};
@@ -264,7 +265,8 @@ pub async fn decode_blocks_to_file(
         &root_chk.key,
         &root_chk.iv,
         &i_block_bf.read_nth_block(0).await?,
-    );
+    )?;
+
     event!(Level::DEBUG, "root i block ok {}", root_i_block.chks.len());
     let meta = root_i_block.metadata.unwrap();
     //let d_block_count = calculate_dblock_count(meta.file_size);
@@ -283,7 +285,7 @@ pub async fn decode_blocks_to_file(
                 &chk.key,
                 &chk.iv,
                 &i_block_bf.read_nth_block(chk.bf_index as usize).await?,
-            );
+            )?;
             event!(
                 Level::DEBUG,
                 "Found IBlock with {} chks",
@@ -301,7 +303,7 @@ pub async fn decode_blocks_to_file(
                 &chk.key,
                 &chk.iv,
                 &d_block_bf.read_nth_block(chk.bf_index as usize).await?,
-            );
+            )?;
             //seek
             let seek_pos = DBLOCK_SIZE_IN_BYTES * chk.bf_index as u64;
             output_file.seek(SeekFrom::Start(seek_pos)).await?;
@@ -399,13 +401,13 @@ pub fn encrypt_k_block(k_block: &KBlock) {
 */
 
 #[must_use]
-fn decrypt_d_block(key: &[u8], iv: &[u8], encrypted_buffer: &[u8]) -> DBlock {
+fn decrypt_d_block(key: &[u8], iv: &[u8], encrypted_buffer: &[u8]) -> Result<DBlock> {
     let dec_buf = decrypt_chacha20_poly1305(key, iv, encrypted_buffer);
     DBlock::from_bytes(&dec_buf)
 }
 
 #[must_use]
-fn decrypt_i_block(key: &[u8], iv: &[u8], encrypted_buffer: &[u8]) -> IBlock {
+fn decrypt_i_block(key: &[u8], iv: &[u8], encrypted_buffer: &[u8]) -> Result<IBlock> {
     let dec_buf = decrypt_chacha20_poly1305(key, iv, encrypted_buffer);
     IBlock::from_bytes(&dec_buf)
 }

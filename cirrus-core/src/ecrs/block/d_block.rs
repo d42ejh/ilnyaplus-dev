@@ -23,9 +23,9 @@ impl DBlock {
         }
     }
 
-    pub fn from_bytes(buffer: &[u8]) -> Self {
+    pub fn from_bytes(buffer: &[u8]) -> anyhow::Result<Self> {
         let archived = rkyv::check_archived_root::<DBlock>(buffer).unwrap();
-        let block: DBlock = archived.deserialize(&mut Infallible).unwrap();
-        block
+        let block: DBlock = archived.deserialize(&mut Infallible)?;
+        Ok(block)
     }
 }

@@ -1,4 +1,4 @@
-use crate::ecrs::CHK;
+use crate::ecrs::{IBlock, CHK};
 use cocoon_core::DHTManager;
 use rocksdb::BlockBasedIndexType;
 use std::collections::VecDeque;
@@ -34,10 +34,11 @@ impl DownloadTask {
         while !queue.is_empty() {
             let chk = queue.pop_front().unwrap();
             //check if available on kvdb
-            todo!();
             match dht_manager.get_value_local(&chk.query)? {
                 Some(data) => match BlockType::from_u32(chk.block_type)? {
-                    BlockType::IBlock => {}
+                    BlockType::IBlock => {
+                        let i_block = IBlock::from_bytes(&data);
+                    }
                     BlockType::DBlock => {}
                     BlockType::KBlock => {}
                 },

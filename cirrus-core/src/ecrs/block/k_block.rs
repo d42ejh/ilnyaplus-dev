@@ -22,9 +22,9 @@ impl KBlock {
         }
     }
 
-    pub fn from_bytes(buffer: &[u8]) -> Self {
+    pub fn from_bytes(buffer: &[u8]) -> anyhow::Result<Self> {
         let archived = rkyv::check_archived_root::<KBlock>(buffer).unwrap();
-        let block: KBlock = archived.deserialize(&mut Infallible).unwrap();
-        block
+        let block: KBlock = archived.deserialize(&mut Infallible)?;
+        Ok(block)
     }
 }

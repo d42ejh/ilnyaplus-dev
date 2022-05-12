@@ -39,9 +39,9 @@ impl IBlock {
         }
     }
 
-    pub fn from_bytes(buffer: &[u8]) -> Self {
+    pub fn from_bytes(buffer: &[u8]) -> anyhow::Result<Self> {
         let archived = rkyv::check_archived_root::<IBlock>(buffer).expect("Invalid data");
-        let block: IBlock = archived.deserialize(&mut Infallible).unwrap();
-        block
+        let block: IBlock = archived.deserialize(&mut Infallible)?;
+        Ok(block)
     }
 }
