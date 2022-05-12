@@ -20,7 +20,7 @@ async fn ping_test() -> anyhow::Result<()> {
             .route_table
             .lock()
             .await
-            .contains(&vp2.dht_manager.local_endpoint()),
+            .contains(&vp2.dht_manager.local_endpoint()?),
         false
     );
 
@@ -29,7 +29,7 @@ async fn ping_test() -> anyhow::Result<()> {
             .route_table
             .lock()
             .await
-            .contains(&vp1.dht_manager.local_endpoint()),
+            .contains(&vp1.dht_manager.local_endpoint()?),
         false
     );
 
@@ -42,7 +42,7 @@ async fn ping_test() -> anyhow::Result<()> {
             .route_table
             .lock()
             .await
-            .contains(&vp2.dht_manager.local_endpoint()),
+            .contains(&vp2.dht_manager.local_endpoint()?),
         true
     );
 
@@ -51,7 +51,7 @@ async fn ping_test() -> anyhow::Result<()> {
             .route_table
             .lock()
             .await
-            .contains(&vp1.dht_manager.local_endpoint()),
+            .contains(&vp1.dht_manager.local_endpoint()?),
         true
     );
 
