@@ -3,19 +3,19 @@ use crate::constant;
 use crate::message;
 use crate::route_table;
 use crate::utility;
+use anyhow::{anyhow, Result};
 use cocoon_config::{KVDatabaseConfig, SqliteConfig};
 use constant::MESSAGE_HEADER_SIZE;
 use message::*;
 use rocksdb::{Options, ReadOptions, WriteOptions, DB};
 use route_table::{endpoint_to_node_id, RouteTable};
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection};
 use std::collections::HashSet;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use tokio::net::UdpSocket;
 use tokio::sync::Mutex;
 use tracing::{event, span, Level};
-
 const DHT_DATA_COLUMN_FAMILY: &str = "dht-data-cf";
 
 /// DHTManager
@@ -33,7 +33,7 @@ impl DHTManager {
         kvdb_config: &KVDatabaseConfig,
         sqlite_config: &SqliteConfig,
         ownep: &SocketAddr,
-    ) -> anyhow::Result<Self> {
+    ) -> Result<Self> {
         //kvdb options
         let mut db_options = Options::default();
         db_options.create_if_missing(true);
@@ -425,7 +425,7 @@ impl DHTManager {
     // TODO: maybe only accept (key, data) such that key == hash(data)
     /// Store a value(data) at the given key on network.
     /// This function will not store the given data locally.
-    pub async fn do_store(&self, key: &[u8], data: &[u8]) {
+    pub async fn do_store(&self, key: &[u8], data: &[u8]) -> Result<()> {
         let request_msg = StoreValueRequestMessage::new(key, data, 10); //todo implement replication level
         let tmp = 10; //TODO implement
         let nodes_to_foward;
@@ -435,8 +435,7 @@ impl DHTManager {
         }
         if nodes_to_foward.len() == 0 {
             //TODO: do something
-            event!(Level::DEBUG, "Could not find peers to foward");
-            return;
+            return Err(anyhow!("Could not find peers to foward"));
         }
         for node in &nodes_to_foward {
             let ep;
@@ -449,18 +448,16 @@ impl DHTManager {
                 .await
                 .expect("Failed to send a store request");
         }
+        Ok(())
     }
 
     /// Initiate a find value request.
-    pub async fn do_find_value(&self, key: &[u8]) {
+    pub async fn do_find_value(&self, key: &[u8]) -> Result<()> {
         let request_msg = FindValueRequestMessage::new(key);
         //check local first
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
-        let get_result = self.kvdb.get_cf(cfh, key);
-        if get_result.is_err() {
-            event!(Level::ERROR, "Failed to perform kvdb get operation");
-        }
-        let opt = get_result.unwrap();
+        let opt = self.kvdb.get_cf(cfh, key)?;
+
         if opt.is_some() {
             //found on local
             event!(
@@ -468,10 +465,7 @@ impl DHTManager {
                 "value for the key {} is found on the local kvdb",
                 hex::encode(key)
             );
-            let value = opt.unwrap();
-            event!(Level::ERROR, "TODO how to reply to other daemon");
-            //TODO: reply to other daemon
-            return;
+            return Ok(());
         }
         //not found, ask to peers
         event!(
@@ -487,8 +481,7 @@ impl DHTManager {
         }
         if nodes_to_foward.len() == 0 {
             //TODO: do something
-            event!(Level::DEBUG, "Could not find peers to foward");
-            return;
+            return Err(anyhow!("Could not find peers to foward"));
         }
         for node in &nodes_to_foward {
             let node = node.lock().unwrap();
@@ -496,13 +489,13 @@ impl DHTManager {
             let _ = self
                 .udp_socket
                 .send_to(&request_msg.to_bytes(), &node.endpoint)
-                .await
-                .unwrap();
+                .await?;
         }
+        Ok(())
     }
 
     /// Initiate a find node request.
-    pub async fn do_find_node(&self, key: &[u8]) {
+    pub async fn do_find_node(&self, key: &[u8]) -> Result<()> {
         let request_msg = FindNodeRequestMessage::new(key);
         let peers;
         {
@@ -521,13 +514,13 @@ impl DHTManager {
             let _ = self
                 .udp_socket
                 .send_to(&request_msg.to_bytes(), &peer.endpoint)
-                .await
-                .expect("Failed to send find node request");
+                .await?;
         }
+        Ok(())
     }
 
     /// Store a value to kvdb.
-    pub fn store_on_local(&self, key: &[u8], data: &[u8]) -> anyhow::Result<()> {
+    pub fn store_on_local(&self, key: &[u8], data: &[u8]) -> Result<()> {
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
         self.kvdb.put_cf(cfh, key, data)?;
         Ok(())
@@ -535,7 +528,7 @@ impl DHTManager {
 
     /// Get value with the given key from kvdb
     /// Returns Ok(None) if not found
-    pub fn get_value_local(&self, key: &[u8]) -> anyhow::Result<Option<Vec<u8>>> {
+    pub fn get_value_local(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
         let cfh = self.kvdb.cf_handle(DHT_DATA_COLUMN_FAMILY).unwrap();
         self.kvdb
             .get_cf(cfh, key)
@@ -545,31 +538,25 @@ impl DHTManager {
     /* dht-dev features */
     /// Convenience function for cocoon-virtual.
     #[cfg(feature = "dht-dev")]
-    pub fn local_endpoint(&self) -> SocketAddr {
-        self.udp_socket.local_addr().unwrap()
+    pub fn local_endpoint(&self) -> Result<SocketAddr> {
+        self.udp_socket
+            .local_addr()
+            .map_err(|e| anyhow::Error::from(e))
     }
 }
 
-async fn do_ping_impl(udp_socket: &Arc<UdpSocket>, endpoint: &SocketAddr) {
+async fn do_ping_impl(udp_socket: &Arc<UdpSocket>, endpoint: &SocketAddr) -> Result<()> {
     let msg = PingRequestMessage::new();
-    let result = udp_socket.send_to(&msg.to_bytes(), endpoint).await;
-    if result.is_err() {
-        event!(
-            Level::DEBUG,
-            "Failed to send a ping message to {}",
-            &endpoint
-        );
-        return;
-    }
+    udp_socket.send_to(&msg.to_bytes(), endpoint).await?;
+
     event!(Level::DEBUG, "Sent a ping message to {}", &endpoint);
+    Ok(())
 }
 
 //send ping reply
-async fn pong(udp_socket: &UdpSocket, endpoint: &SocketAddr) {
+async fn pong(udp_socket: &UdpSocket, endpoint: &SocketAddr) -> Result<()> {
     let msg = PingResponseMessage::new();
-    udp_socket
-        .send_to(&msg.to_bytes(), endpoint)
-        .await
-        .expect("Failed to send ping reply message");
+    udp_socket.send_to(&msg.to_bytes(), endpoint).await?;
     event!(Level::DEBUG, "Sent pong message to {}", &endpoint);
+    Ok(())
 }

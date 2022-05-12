@@ -70,7 +70,7 @@ impl VirtualNetworkManager {
                 event!(Level::DEBUG, "ping from {} to {}", vp1.name, vp2.name);
 
                 vp1.dht_manager
-                    .do_ping(&vp2.dht_manager.local_endpoint())
+                    .do_ping(&vp2.dht_manager.local_endpoint()?)
                     .await;
             }
         }
@@ -109,7 +109,7 @@ impl VirtualNetworkManager {
                 );
                 choosed_vp
                     .dht_manager
-                    .do_ping(&other_vp.dht_manager.local_endpoint())
+                    .do_ping(&other_vp.dht_manager.local_endpoint()?)
                     .await;
             }
             1 => {
