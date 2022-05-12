@@ -102,7 +102,7 @@ impl DHTManager {
                     num::FromPrimitive::from_u32(message_header.message_type);
 
                 if msg_type.is_none() {
-                    panic!("Message type is 'none'");
+                    todo!("Message type is 'none' TODO should handle this");
                 }
                 match msg_type.unwrap() {
                     MessageType::PingRequest => {
@@ -127,7 +127,9 @@ impl DHTManager {
                                         //insert to ping list
                                         ping_list.insert(ep);
                                     }
-                                    do_ping_impl(&cloned_socket, &ep).await;
+                                    if do_ping_impl(&cloned_socket, &ep).await.is_err() {
+                                        event!(Level::ERROR, "Failed to ping");
+                                    }
                                 }
 
                                 //todo
@@ -411,14 +413,20 @@ impl DHTManager {
     }
 
     /// Initiate a ping request.
-    pub async fn do_ping(&self, endpoint: &SocketAddr) {
+    pub async fn do_ping(&self, endpoint: &SocketAddr) -> Result<()> {
         {
             //insert to ping list
-            let mut ping_list = self.ping_list.lock().unwrap();
+            let mut ping_list = match self.ping_list.lock() {
+                Ok(pl) => pl,
+                Err(e) => {
+                    return Err(anyhow!(e.to_string()));
+                }
+            };
             ping_list.insert(*endpoint);
             event!(Level::DEBUG, "Inserted {} to the ping list", endpoint);
         }
-        do_ping_impl(&self.udp_socket, endpoint).await;
+        do_ping_impl(&self.udp_socket, endpoint).await?;
+        Ok(())
     }
 
     // TODO: maybe return Result<bool>
