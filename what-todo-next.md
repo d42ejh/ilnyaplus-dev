@@ -10,5 +10,6 @@ Implement download features and test upload-download
 - [ ] replace all inappropriate assert! macros with debug_assert!
 - [ ] maybe no need to save IBlock CHKs to bf
 - [ ] strict dht store rules
-- [ ] refactor dht manager functions (return Result instead of ())
+- [x] refactor dht manager functions 
+- [ ] refactor dht manager receive loop
 - [ ] Use RwLock instead of Mutex when appropriate
